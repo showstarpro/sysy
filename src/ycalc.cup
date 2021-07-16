@@ -52,7 +52,7 @@ non terminal NArrayIdentifier DefArrayName, ArrayItem;
 non terminal NFunctionDefine FuncDef;
 non terminal NFunctionDefineArgList FuncFParams;
 non terminal NFunctionDefineArg FuncFParam, FuncFParamArray, FuncFParamOne;
-non terminal NArrayDeclareInitValue InitValArray, InitValArrayInner;
+non terminal NArrayDeclareInitValue InitValArray, InitValArrayInner, InitValArrayInner_T;
 non terminal NFunctionCallArgList FuncRParams;
 non terminal NBlock  Block, BlockItems;
 non terminal NStatement BlockItem, Stmt, AssignStmt, AssignStmtWithoutSemi, IfStmt, ReturnStmt, WhileStmt, ForStmt, BreakStmt, ContinueStmt;
@@ -62,6 +62,7 @@ non terminal NStatement BlockItem, Stmt, AssignStmt, AssignStmtWithoutSemi, IfSt
 
 /** Precedence */
 precedence nonassoc SEMI;
+
 precedence left COMMA;
 precedence right ASSIGN;
 precedence left AND;
@@ -79,6 +80,9 @@ precedence left LPAREN,RPAREN;
 precedence left LSQUARE, RSQUARE;
 //precedence right RBRACE, LBRACE;
 precedence nonassoc ELSE;
+
+precedence nonassoc InitValArray;
+precedence nonassoc InitVal;
 
 
 start with CompUnit;
@@ -140,17 +144,14 @@ InitValArray ::= LBRACE InitValArrayInner:i2 RBRACE {: RESULT = i2; :}
             | LBRACE RBRACE     {: RESULT = new NArrayDeclareInitValue(false, null);  :}
             ;
 
-InitValArrayInner ::= InitValArrayInner:i1 COMMA InitValArray:i3 {: RESULT = i1; RESULT.value_list.addElement(i3); :}
-                 | InitValArrayInner:i1 COMMA InitVal:i3 {: RESULT = i1; RESULT.value_list.addElement(new NArrayDeclareInitValue(true, i3)); :}
-                 | InitValArray:i1 {: RESULT = new NArrayDeclareInitValue(false, null); RESULT.value_list.addElement(i1); :}
-                 | InitVal:i1       {: RESULT = new NArrayDeclareInitValue(false, null); RESULT.value_list.addElement(new NArrayDeclareInitValue(true, i1)); :}
-                 | CommaExpr:i1 {:
-                    RESULT = new NArrayDeclareInitValue(false, null);
-                    for (NExpression i : ((NCommaExpression)i1).values){
-                        RESULT.value_list.addElement(new NArrayDeclareInitValue(true, i));
-                    }
-                 :}
+InitValArrayInner ::=  InitValArray:i1 InitValArrayInner_T:i2  {: RESULT = i2; RESULT.value_list.add(0,i1); :}
+                 | InitVal:i1 InitValArrayInner_T:i2   {:  RESULT = i2; RESULT.value_list.add(0,new NArrayDeclareInitValue(true, i1));  :}
                  ;
+
+InitValArrayInner_T ::= COMMA  InitValArray:i1 InitValArrayInner_T:i2 {: RESULT = i2; RESULT.value_list.add(0,i1); :}
+                | COMMA InitVal:i1 InitValArrayInner_T:i2  {: RESULT = i2; RESULT.value_list.add(0,new NArrayDeclareInitValue(true, i1)); :}
+                | {: RESULT = new NArrayDeclareInitValue(false, null); :}
+                ;
 
 Exp ::= AddExp:i1   {: RESULT = i1; :}
    | CommaExpr:i1   {: RESULT = i1; :}
