@@ -1,0 +1,318 @@
+import java_cup.runtime.*;
+import java.util.*;
+import java.io.*;
+import node.*;
+
+parser code {:
+
+    public NRoot root;
+   
+    public void report_error(String message, Object info) {
+        StringBuilder m = new StringBuilder("Error");
+        if (info instanceof java_cup.runtime.Symbol) {
+            java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+            if (s.left >= 0) {                
+                m.append(" in line "+(s.left+1));   
+                if (s.right >= 0)                    
+                    m.append(", column "+(s.right+1));
+            }
+        }
+        m.append(" : "+message);
+        System.err.println(m);
+    }
+   
+    public void report_fatal_error(String message, Object info) {
+        report_error(message, info);
+        System.exit(1);
+    }
+:};
+
+/** Terminals */
+
+terminal Integer    INTEGER_VALUE;
+terminal String     IDENTIFIER;
+
+terminal Integer    IF, ELSE, WHILE, FOR, BREAK, CONTINUE, RETURN;
+terminal Integer    CONST, INT, VOID;
+terminal Integer    ASSIGN, EQ, NE, LT, LE, GT, GE;
+terminal Integer    AND, OR;
+terminal Integer    LPAREN, RPAREN, LBRACE, RBRACE, LSQUARE, RSQUARE;
+terminal Integer    DOT, COMMA, SEMI;
+terminal Integer    PLUSPLUS, MINUSMINUS;
+terminal Integer    PLUS, MINUS, MUL, DIV, MOD, NOT;
+
+/** Non-terminals **/
+non terminal Integer    AddOp, MulOp, RelOp, UnaryOp, BType;
+non terminal NIdentifier ident, LVal;
+non terminal NExpression Number, Exp, CommaExpr, InitVal, LOrExp, LAndExp, EqExp, AddExp, MulExp, PrimaryExp, RelExp, UnaryExp, FunctionCall;
+non terminal NRoot CompUnit;
+non terminal NDeclareStatement Decl, ConstDecl, VarDecl, ConstDeclStmt, VarDeclStmt;
+non terminal NDeclare Def, DefOne, DefArray, ConstDef, ConstDefOne, ConstDefArray;
+non terminal NArrayIdentifier DefArrayName, ArrayItem;
+non terminal NFunctionDefine FuncDef;
+non terminal NFunctionDefineArgList FuncFParams;
+non terminal NFunctionDefineArg FuncFParam, FuncFParamArray, FuncFParamOne;
+non terminal NArrayDeclareInitValue InitValArray, InitValArrayInner;
+non terminal NFunctionCallArgList FuncRParams;
+non terminal NBlock  Block, BlockItems;
+non terminal NStatement BlockItem, Stmt, AssignStmt, AssignStmtWithoutSemi, IfStmt, ReturnStmt, WhileStmt, ForStmt, BreakStmt, ContinueStmt;
+non terminal NConditionExpression Cond;
+
+
+
+/** Precedence */
+precedence nonassoc SEMI;
+precedence left COMMA;
+precedence right ASSIGN;
+precedence left AND;
+precedence left OR;
+precedence left EQ, NE;
+
+precedence left  LT, LE, GT, GE;
+precedence left PLUS, MINUS;
+precedence left MUL, DIV, MOD;
+precedence right NOT, PLUSPLUS,MINUSMINUS;
+
+precedence left LPAREN,RPAREN;
+precedence left LSQUARE, RSQUARE;
+
+
+start with CompUnit;
+
+/** ============= GRAMMAR ============= */
+CompUnit ::= CompUnit Decl:decl     {: RESULT.body.addElement(decl); :}
+        | CompUnit FuncDef:fdef     {: RESULT.body.addElement(fdef); :}
+        | Decl:decl                 {: root = new NRoot(); RESULT = root; RESULT.body.addElement(decl);  :}
+        | FuncDef:fdef              {: root = new NRoot(); RESULT = root; RESULT.body.addElement(fdef); :}
+        ;
+
+Decl ::= ConstDeclStmt:t            {: RESULT = t; :}
+    | VarDeclStmt:t                 {: RESULT = t; :}
+    ;
+
+BType ::= INT:t                   {: RESULT = t; :};
+
+ConstDeclStmt ::= ConstDecl:cd SEMI {: RESULT=cd; :};
+
+ConstDecl ::= CONST BType:type ConstDef:cd  {: RESULT = new NDeclareStatement(type); RESULT.list.addElement(cd); :}
+         | ConstDecl COMMA ConstDef:cd         {: RESULT.list.addElement(cd); :}
+         ;
+
+VarDeclStmt ::= VarDecl:vd SEMI   {:RESULT=vd; :};
+
+VarDecl ::= BType:type Def:def  {: RESULT=new NDeclareStatement(type); RESULT.list.addElement(def); :} 
+       | VarDecl COMMA Def:def      {: RESULT.list.addElement(def); :}
+       ;
+
+Def ::= DefOne:i1                 {: RESULT =i1;  :}
+   | DefArray:i1                  {: RESULT =i1;  :}
+   ;
+
+DefOne ::= ident:id ASSIGN InitVal:iv  {: RESULT = new NVarDeclareWithInit(id, iv, false); :}
+      | ident:id                        {: RESULT = new NVarDeclare(id); :} 
+      ;
+
+DefArray ::= DefArrayName:i1 ASSIGN InitValArray:i3 {: RESULT = new NArrayDeclareWithInit(i1, i3, false); :} 
+        | DefArrayName:i1       {: RESULT = new NArrayDeclare(i1); :} 
+        ;
+
+ConstDef ::= ConstDefOne:i1 {: RESULT = i1; :}
+        | ConstDefArray:i1  {: RESULT = i1; :}
+        ;
+
+ConstDefOne ::= ident:i1 ASSIGN InitVal:i3  {: RESULT = new NVarDeclareWithInit(i1,i3, true); :}
+           ;
+
+ConstDefArray ::= DefArrayName:i1 ASSIGN InitValArray:i3 {: RESULT = new NArrayDeclareWithInit(i1,i3,true); :}
+             ;
+
+DefArrayName ::= DefArrayName:i1 LSQUARE Exp:i3 RSQUARE {: RESULT = i1; RESULT.shape.addElement(i3); :}
+            | ident:i1 LSQUARE Exp:i3 RSQUARE  {: RESULT = new NArrayIdentifier(i1); RESULT.shape.addElement(i3); :}
+            ;
+
+InitVal ::= AddExp:i1 {: RESULT = i1; :} ;
+
+InitValArray ::= LBRACE InitValArrayInner:i2 RBRACE {: RESULT = i2; :}
+            | LBRACE RBRACE     {: RESULT = new NArrayDeclareInitValue(false, null);  :}
+            ;
+
+InitValArrayInner ::= InitValArrayInner:i1 COMMA InitValArray:i3 {: RESULT = i1; RESULT.value_list.addElement(i3); :} 
+                 | InitValArrayInner:i1 COMMA InitVal:i3 {: RESULT = i1; RESULT.value_list.addElement(new NArrayDeclareInitValue(true, i3)); :}
+                 | InitValArray:i1 {: RESULT = new NArrayDeclareInitValue(false, null); RESULT.value_list.addElement(i1); :}
+                 | InitVal:i1       {: RESULT = new NArrayDeclareInitValue(false, null); RESULT.value_list.addElement(new NArrayDeclareInitValue(true, i1)); :}
+                 | CommaExpr:i1 {:
+                    RESULT = new NArrayDeclareInitValue(false, null);
+                    for (NExpression i : ((NCommaExpression)i1).values){
+                        RESULT.value_list.addElement(new NArrayDeclareInitValue(true, i));
+                    }
+                 :}
+                 ;
+
+Exp ::= AddExp:i1   {: RESULT = i1; :}
+   | CommaExpr:i1   {: RESULT = i1; :}
+   ;
+
+CommaExpr ::= AddExp:i1 COMMA AddExp:i3 {:
+                NCommaExpression n = new NCommaExpression();
+                n.values.addElement(i1);
+                n.values.addElement(i3);
+                RESULT  = n;
+            :}
+         | CommaExpr:i1 COMMA AddExp:i3 {: 
+                ((NCommaExpression)i1).values.addElement(i3);
+                RESULT = i1;
+          :}
+         ;
+
+LOrExp ::= LAndExp:i1 OR:i2 LAndExp:i3 {: RESULT = new NBinaryExpression(i1,i2,i3); :}
+      | LOrExp:i1 OR:i2 LAndExp:i3      {: RESULT = new NBinaryExpression(i1,i2,i3); :}
+      | LAndExp:i1  {: RESULT = i1; :}
+      ;
+
+LAndExp ::= LAndExp:i1 AND:i2 EqExp:i3 {: RESULT = new NBinaryExpression(i1,i2,i3); :} 
+       | EqExp:i1 {: RESULT = i1; :}
+       ;
+
+EqExp ::= RelExp:i1 EQ:i2 RelExp:i3  {: RESULT = new NBinaryExpression(i1,i2,i3); :}
+     | RelExp:i1 NE:i2 RelExp:i3   {: RESULT = new NBinaryExpression(i1,i2,i3); :} 
+     | RelExp:i1    {: RESULT = i1; :}
+     ;
+
+RelExp ::= AddExp:i1 {: RESULT = i1; :}
+      | RelExp:i1 RelOp:i2 AddExp:i3  {: RESULT = new NBinaryExpression(i1,i2,i3); :}
+      ;
+
+AddExp ::= AddExp:i1 AddOp:i2 MulExp:i3  {: RESULT = new NBinaryExpression(i1,i2,i3); :}
+      | MulExp:i1 {: RESULT=i1; :}
+      ;
+
+MulExp ::= MulExp:i1 MulOp:i2 UnaryExp:i3  {: RESULT = new NBinaryExpression(i1,i2,i3); :}
+      | UnaryExp:i1 {: RESULT = i1; :}
+      ;
+
+UnaryExp ::= UnaryOp:i1 UnaryExp:i2  {: RESULT = new NUnaryExpression(i1,i2); :}
+        | FunctionCall:i1       {: RESULT = i1; :}
+        | PrimaryExp:i1         {: RESULT = i1; :}
+        ;
+
+FunctionCall ::= ident:i1 LPAREN FuncRParams:i3 RPAREN  {: RESULT = new NFunctionCall(i1,i3); :}
+            | ident:i1 LPAREN RPAREN {: RESULT = new NFunctionCall(i1, new NFunctionCallArgList()); :}
+            ;
+
+PrimaryExp ::= LVal:i1 {: RESULT = i1; :}
+          | Number:i1 {: RESULT = i1; :}
+          | LPAREN Cond:i2 RPAREN  {: RESULT = i2; :}
+          | AssignStmtWithoutSemi:i1 {: RESULT = i1; :}
+          ;
+
+ArrayItem ::= LVal:i1 LSQUARE Exp:i3 RSQUARE {: RESULT = new NArrayIdentifier(i1); RESULT.shape.addElement(i3); :}
+         | ArrayItem:i1 LSQUARE Exp:i3 RSQUARE  {: RESULT=i1; RESULT.shape.addElement(i3); :}
+         ;
+
+LVal ::= ArrayItem:i1 {: RESULT = i1; :}
+    | ident:i1          {: RESULT = i1; :}
+    ;
+
+FuncDef ::= BType:i1 ident:i2 LPAREN FuncFParams:i4 RPAREN Block:i6 {: RESULT = new NFunctionDefine(i1,i2,i4,i6); :} 
+       | BType:i1 ident:i2 LPAREN RPAREN:i4 Block:i5  {: RESULT = new NFunctionDefine(i1,i2,new NFunctionDefineArgList(),i5); :}
+       | VOID:i1 ident:i2 LPAREN FuncFParams:i4 RPAREN Block:i6 {: RESULT = new NFunctionDefine(i1,i2,i4,i6); :} 
+       | VOID:i1 ident:i2 LPAREN RPAREN Block:i5 {: RESULT = new NFunctionDefine(i1,i2,new NFunctionDefineArgList(),i5); :}
+       ;
+
+
+FuncFParams ::= FuncFParams:i1 COMMA FuncFParam:i3 {: RESULT.list.addElement(i3); :}
+           | FuncFParam:i1 {: { RESULT = new NFunctionDefineArgList();  RESULT.list.addElement(i1); } :}
+           ;
+
+FuncFParam ::= FuncFParamOne:i1 {: RESULT = i1; :}
+          | FuncFParamArray:i1 {: RESULT = i1; :}
+          ;
+
+FuncRParams ::= FuncRParams:i1 COMMA AddExp:i3  {: RESULT = i1; RESULT.args.addElement(i3); :}
+           | AddExp:i1 {: RESULT = new NFunctionCallArgList(); RESULT.args.addElement(i1); :} 
+           ;
+
+FuncFParamOne ::= BType:i1 ident:i2 {: RESULT = new NFunctionDefineArg(i1,i2); :} ;
+
+FuncFParamArray ::= FuncFParamOne:i1 LSQUARE RSQUARE {:
+                    RESULT = new NFunctionDefineArg(
+                        i1.type, 
+                        new NArrayIdentifier(new NArrayIdentifier(i1.name)));
+                        ((NArrayIdentifier)(RESULT.name)).shape.addElement(new NNumber(1));
+                :}
+               | FuncFParamArray:i1 LSQUARE Exp:i3 RSQUARE {: RESULT = i1; ((NArrayIdentifier)(RESULT.name)).shape.addElement(i3); :}
+               ;
+
+Block ::= LBRACE RBRACE  {: RESULT = new NBlock(); :}
+     | LBRACE BlockItems:i2 RBRACE {: RESULT = i2; :}
+     ;
+
+BlockItems ::= BlockItem:i1 {: RESULT = new NBlock(); RESULT.statements.addElement(i1); :} 
+          | BlockItems:i1 BlockItem:i2  {: RESULT = i1; RESULT.statements.addElement(i2); :}
+          ;
+
+BlockItem ::= Decl:i1 {: RESULT = i1; :}
+         | Stmt:i1 {: RESULT = i1; :}
+         ;
+
+Stmt ::= Block:i1 {: RESULT = i1; :}
+    | AssignStmt:i1 {: RESULT = i1; :}
+    | IfStmt:i1 {: RESULT = i1; :}
+    | ReturnStmt:i1 {: RESULT = i1; :}
+    | WhileStmt:i1 {: RESULT = i1; :}
+    | BreakStmt:i1 {: RESULT = i1; :}
+    | ContinueStmt:i1 {: RESULT = i1; :}
+    | Exp:i1 SEMI {: RESULT = new NEvalStatement(i1); :} 
+    | SEMI {: RESULT = new NVoidStatement(); :}
+    ;
+
+AssignStmt ::= AssignStmtWithoutSemi:i1 SEMI  {: RESULT = i1; :} ;
+
+AssignStmtWithoutSemi ::= LVal:i1 ASSIGN AddExp:i3 {: RESULT = new NAssignment(i1,i3); :} 
+                     | PLUSPLUS LVal:i2 {: RESULT = new NAssignment(i2, new NBinaryExpression(i2, sym.PLUS, new NNumber(1))); :}
+                     | MINUSMINUS LVal:i2 {: RESULT = new NAssignment(i2, new NBinaryExpression(i2, sym.MINUS, new NNumber(1))); :}
+                     | LVal:i1 PLUSPLUS  {: RESULT = new NAfterInc(i1, sym.PLUS); :}
+                     | LVal:i1 MINUSMINUS {: RESULT = new NAfterInc(i1, sym.MINUS); :}
+                     ;
+
+IfStmt ::= IF LPAREN Cond:i3 RPAREN Stmt:i5 {: RESULT = new NIfStatement(i3, i5); :} 
+      | IF LPAREN Cond:i3 RPAREN Stmt:i5 ELSE Stmt:i7 {: RESULT = new NIfElseStatement(i3,i5,i7); :} 
+      ;
+
+ReturnStmt ::= RETURN Exp:i2 SEMI  {: RESULT = new NReturnStatement(i2); :}
+          | RETURN SEMI {: RESULT = new NReturnStatement(); :}
+          ;
+
+WhileStmt ::= WHILE LPAREN Cond:i3 RPAREN Stmt:i5 {: RESULT = new NWhileStatement(i3,i5);  :} ;
+
+
+BreakStmt ::= BREAK SEMI {: RESULT = new NBreakStatement(); :};
+
+ContinueStmt ::= CONTINUE SEMI  {: RESULT = new NContinueStatement(); :};
+
+Cond ::= LOrExp:i1   {: RESULT = (NConditionExpression)i1; :};
+
+Number ::= INTEGER_VALUE:i1 {: RESULT = new NNumber(i1); :} ;
+
+AddOp ::= PLUS:i1 {: RESULT = i1; :}
+     | MINUS:i1 {: RESULT = i1; :}
+     ;
+
+MulOp ::= MUL:i1 {: RESULT = i1; :}
+     | DIV:i1 {: RESULT = i1; :}
+     | MOD:i1 {: RESULT = i1; :}
+     ;
+
+UnaryOp ::= PLUS:i1 {: RESULT = i1; :}
+       | MINUS:i1 {: RESULT = i1; :}
+       | NOT:i1 {: RESULT = i1; :}
+       ;
+
+RelOp ::= GT:i1 {: RESULT = i1; :}
+     | GE:i1 {: RESULT = i1; :}
+     | LT:i1 {: RESULT = i1; :}
+     | LE:i1 {: RESULT = i1; :}
+     ;
+
+ident ::= IDENTIFIER:i1 {: RESULT = new NIdentifier(i1); :}
+	 ;
