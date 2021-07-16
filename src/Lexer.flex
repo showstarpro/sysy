@@ -23,11 +23,15 @@ import node.*;
 
 LineTerminator = \r|\n|\r\n
 WhiteSpace     = {LineTerminator} | [ \t\f]
-
+TraditionalComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
+EndOfLineComment     = "//" [^\r\n]* {LineTerminator}?
 
 %%
    
 <YYINITIAL> {
+    /** comment */
+   {TraditionalComment} { }
+    {EndOfLineComment} {  }
 
     /** Keywords. */
     "if"            { return symbol(sym.IF, new Integer(sym.IF)); }

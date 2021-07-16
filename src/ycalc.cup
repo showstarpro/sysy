@@ -56,7 +56,7 @@ non terminal NArrayDeclareInitValue InitValArray, InitValArrayInner;
 non terminal NFunctionCallArgList FuncRParams;
 non terminal NBlock  Block, BlockItems;
 non terminal NStatement BlockItem, Stmt, AssignStmt, AssignStmtWithoutSemi, IfStmt, ReturnStmt, WhileStmt, ForStmt, BreakStmt, ContinueStmt;
-non terminal NConditionExpression Cond;
+// non terminal NExpression LOrExp;
 
 
 
@@ -73,15 +73,19 @@ precedence left PLUS, MINUS;
 precedence left MUL, DIV, MOD;
 precedence right NOT, PLUSPLUS,MINUSMINUS;
 
+
+
 precedence left LPAREN,RPAREN;
 precedence left LSQUARE, RSQUARE;
+//precedence right RBRACE, LBRACE;
+precedence nonassoc ELSE;
 
 
 start with CompUnit;
 
 /** ============= GRAMMAR ============= */
-CompUnit ::= CompUnit Decl:decl     {: RESULT.body.addElement(decl); :}
-        | CompUnit FuncDef:fdef     {: RESULT.body.addElement(fdef); :}
+CompUnit ::= CompUnit:i1 Decl:decl     {: RESULT= i1; RESULT.body.addElement(decl); :}
+        | CompUnit:i1 FuncDef:fdef     {: RESULT= i1; RESULT.body.addElement(fdef); :}
         | Decl:decl                 {: root = new NRoot(); RESULT = root; RESULT.body.addElement(decl);  :}
         | FuncDef:fdef              {: root = new NRoot(); RESULT = root; RESULT.body.addElement(fdef); :}
         ;
@@ -95,13 +99,13 @@ BType ::= INT:t                   {: RESULT = t; :};
 ConstDeclStmt ::= ConstDecl:cd SEMI {: RESULT=cd; :};
 
 ConstDecl ::= CONST BType:type ConstDef:cd  {: RESULT = new NDeclareStatement(type); RESULT.list.addElement(cd); :}
-         | ConstDecl COMMA ConstDef:cd         {: RESULT.list.addElement(cd); :}
+         | ConstDecl:i1 COMMA ConstDef:cd         {: RESULT= i1; RESULT.list.addElement(cd); :}
          ;
 
 VarDeclStmt ::= VarDecl:vd SEMI   {:RESULT=vd; :};
 
 VarDecl ::= BType:type Def:def  {: RESULT=new NDeclareStatement(type); RESULT.list.addElement(def); :} 
-       | VarDecl COMMA Def:def      {: RESULT.list.addElement(def); :}
+       | VarDecl:i1 COMMA Def:def      {: RESULT= i1; RESULT.list.addElement(def); :}
        ;
 
 Def ::= DefOne:i1                 {: RESULT =i1;  :}
@@ -136,7 +140,7 @@ InitValArray ::= LBRACE InitValArrayInner:i2 RBRACE {: RESULT = i2; :}
             | LBRACE RBRACE     {: RESULT = new NArrayDeclareInitValue(false, null);  :}
             ;
 
-InitValArrayInner ::= InitValArrayInner:i1 COMMA InitValArray:i3 {: RESULT = i1; RESULT.value_list.addElement(i3); :} 
+InitValArrayInner ::= InitValArrayInner:i1 COMMA InitValArray:i3 {: RESULT = i1; RESULT.value_list.addElement(i3); :}
                  | InitValArrayInner:i1 COMMA InitVal:i3 {: RESULT = i1; RESULT.value_list.addElement(new NArrayDeclareInitValue(true, i3)); :}
                  | InitValArray:i1 {: RESULT = new NArrayDeclareInitValue(false, null); RESULT.value_list.addElement(i1); :}
                  | InitVal:i1       {: RESULT = new NArrayDeclareInitValue(false, null); RESULT.value_list.addElement(new NArrayDeclareInitValue(true, i1)); :}
@@ -201,7 +205,7 @@ FunctionCall ::= ident:i1 LPAREN FuncRParams:i3 RPAREN  {: RESULT = new NFunctio
 
 PrimaryExp ::= LVal:i1 {: RESULT = i1; :}
           | Number:i1 {: RESULT = i1; :}
-          | LPAREN Cond:i2 RPAREN  {: RESULT = i2; :}
+          | LPAREN LOrExp:i2 RPAREN  {: RESULT = i2; :}
           | AssignStmtWithoutSemi:i1 {: RESULT = i1; :}
           ;
 
@@ -220,8 +224,8 @@ FuncDef ::= BType:i1 ident:i2 LPAREN FuncFParams:i4 RPAREN Block:i6 {: RESULT = 
        ;
 
 
-FuncFParams ::= FuncFParams:i1 COMMA FuncFParam:i3 {: RESULT.list.addElement(i3); :}
-           | FuncFParam:i1 {: { RESULT = new NFunctionDefineArgList();  RESULT.list.addElement(i1); } :}
+FuncFParams ::= FuncFParams:i1 COMMA FuncFParam:i3 {: RESULT = i1; RESULT.list.addElement(i3); :}
+           | FuncFParam:i1 {:  RESULT = new NFunctionDefineArgList();  RESULT.list.addElement(i1);  :}
            ;
 
 FuncFParam ::= FuncFParamOne:i1 {: RESULT = i1; :}
@@ -275,22 +279,22 @@ AssignStmtWithoutSemi ::= LVal:i1 ASSIGN AddExp:i3 {: RESULT = new NAssignment(i
                      | LVal:i1 MINUSMINUS {: RESULT = new NAfterInc(i1, sym.MINUS); :}
                      ;
 
-IfStmt ::= IF LPAREN Cond:i3 RPAREN Stmt:i5 {: RESULT = new NIfStatement(i3, i5); :} 
-      | IF LPAREN Cond:i3 RPAREN Stmt:i5 ELSE Stmt:i7 {: RESULT = new NIfElseStatement(i3,i5,i7); :} 
+IfStmt ::= IF LPAREN LOrExp:i3 RPAREN Stmt:i5 {: RESULT = new NIfStatement(i3, i5); :} 
+      | IF LPAREN LOrExp:i3 RPAREN Stmt:i5 ELSE Stmt:i7 {: RESULT = new NIfElseStatement(i3,i5,i7); :} 
       ;
 
 ReturnStmt ::= RETURN Exp:i2 SEMI  {: RESULT = new NReturnStatement(i2); :}
           | RETURN SEMI {: RESULT = new NReturnStatement(); :}
           ;
 
-WhileStmt ::= WHILE LPAREN Cond:i3 RPAREN Stmt:i5 {: RESULT = new NWhileStatement(i3,i5);  :} ;
+WhileStmt ::= WHILE LPAREN LOrExp:i3 RPAREN Stmt:i5 {: RESULT = new NWhileStatement(i3,i5);  :} ;
 
 
 BreakStmt ::= BREAK SEMI {: RESULT = new NBreakStatement(); :};
 
 ContinueStmt ::= CONTINUE SEMI  {: RESULT = new NContinueStatement(); :};
 
-Cond ::= LOrExp:i1   {: RESULT = (NConditionExpression)i1; :};
+// LOrExp ::= LOrExp:i1   {: RESULT = (NExpression)i1; :};
 
 Number ::= INTEGER_VALUE:i1 {: RESULT = new NNumber(i1); :} ;
 

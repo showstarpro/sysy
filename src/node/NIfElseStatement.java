@@ -3,14 +3,14 @@ package node;
 import java.io.PrintStream;
 
 public class NIfElseStatement extends NStatement {
-    public NConditionExpression cond;
+    public NExpression cond;
     public NStatement thenstmt, elsestmt;
 
     public NIfElseStatement() {
 
     }
 
-    public NIfElseStatement(NConditionExpression cond, NStatement thenstmt, NStatement elsestmt) {
+    public NIfElseStatement(NExpression cond, NStatement thenstmt, NStatement elsestmt) {
         this.cond = cond;
         this.thenstmt = thenstmt;
         this.elsestmt = elsestmt;

@@ -3,13 +3,13 @@ package node;
 import java.io.PrintStream;
 
 public class NWhileStatement extends NStatement {
-    public NConditionExpression cond;
+    public NExpression cond;
     public NStatement dostmt;
 
     public NWhileStatement() {
     }
 
-    public NWhileStatement(NConditionExpression cond, NStatement dostmt) {
+    public NWhileStatement(NExpression cond, NStatement dostmt) {
         this.cond = cond;
         this.dostmt = dostmt;
     }
