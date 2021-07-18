@@ -156,6 +156,7 @@ public class NBinaryExpression extends NExpression {
                 end.add(new IR(IR.OpCode.LABEL,label));
                 lhs= this.lhs.eval_runtime(ctx,ir);
                 ir.add(new IR(IR.OpCode.PHI_MOV,new OpName(1),""));
+                //修改到这儿
 //                ir.back().phi_block = end.begin();
 //                ir.emplace_back(lhs.else_op, label);
 //                auto rhs = this->rhs.eval_runntime(ctx, ir);
