@@ -1,9 +1,12 @@
 #!/bin/bash
 
 #compile
+cd ./parser;
 jflex Lexer.flex;
 java -cp .:java-cup-11b.jar java_cup.Main  < ycalc.cup;
+cd ../;
 javac -cp .:java-cup-11b.jar Main.java;
+
 
 #run
 dir=../test/
@@ -17,9 +20,12 @@ done
 
 
 #clean
+cd ./parser;
 rm Lexer.java;
 rm parser.java;
 rm sym.java;
 rm *.class;
+cd ../
+rm Main.class;
 rm node/*.class;
 

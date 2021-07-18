@@ -1,3 +1,5 @@
+package parser;
+
 import java_cup.runtime.*;
 import node.*;
       
@@ -7,6 +9,7 @@ import node.*;
 
 %line
 %column
+%public
 
 %cup
 
