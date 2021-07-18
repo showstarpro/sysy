@@ -1,6 +1,9 @@
 package node;
 
+import ir.*;
+
 import java.io.PrintStream;
+import java.util.List;
 
 public class NIdentifier extends NExpression {
     public String name;
@@ -17,5 +20,31 @@ public class NIdentifier extends NExpression {
         this.printIndentation(indentation, end,out);
         out.print("Identifier: ");
         out.println(this.name);
+    }
+
+    public int eval(ContextIR ctx) throws Exception {
+
+            ConstInfo v=ctx.find_const(this.name);
+            if(v.is_array)
+            {
+                throw new Exception(this.name+" is a array.");
+            }
+            else
+            {
+                return v.value.firstElement();
+            }
+    }
+
+    public OpName eval_runntime(ContextIR ctx, List<IR> ir) throws Exception {
+        VarInfo v=ctx.find_symbol(this.name);
+
+        if(v.is_array)
+        {
+            return new OpName(v.name);
+        }
+        else
+        {
+            return new OpName(v.name);
+        }
     }
 }

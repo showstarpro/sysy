@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class IR {
-    enum OpCode {
+   public enum OpCode {
         MALLOC_IN_STACK,  // dest = offset(new StackArray(size op1))
         MOV,              // dest = op1
         ADD,              // dest = op1 + op2
