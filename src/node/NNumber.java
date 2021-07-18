@@ -1,5 +1,7 @@
 package node;
 
+import ir.ContextIR;
+
 import java.io.PrintStream;
 
 public class NNumber extends NExpression {
@@ -20,5 +22,10 @@ public class NNumber extends NExpression {
     public void print(int indentation, boolean end,PrintStream out) {
         this.printIndentation(indentation, end,out);
         out.println("Number: "+value);
+    }
+
+    public int eval(ContextIR ctx)
+    {
+        return this.value;
     }
 }

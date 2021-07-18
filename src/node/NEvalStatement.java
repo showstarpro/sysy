@@ -1,5 +1,7 @@
 package node;
 
+import ir.ContextIR;
+
 import java.io.PrintStream;
 
 public class NEvalStatement extends NStatement {
@@ -16,5 +18,10 @@ public class NEvalStatement extends NStatement {
         this.printIndentation(indentation, end, out);
         out.println("Eval");
         value.print(indentation+1, true, out);
+    }
+
+    public int eval(ContextIR ctx)
+    {
+        return this.eval(ctx);
     }
 }

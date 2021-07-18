@@ -1,6 +1,9 @@
 package node;
 
+import ir.*;
+
 import java.io.PrintStream;
+import java.util.List;
 import java.util.Vector;
 
 public class NArrayIdentifier extends NIdentifier {
@@ -25,6 +28,68 @@ public class NArrayIdentifier extends NIdentifier {
         out.println("Shape");
         for(NExpression i: shape){
             i.print(indentation+2, shape.indexOf(i)==shape.size()-1, out);
+        }
+    }
+
+    public int eval(ContextIR ctx) throws Exception {
+        ConstInfo v=ctx.find_const(this.name.name);
+        if(v.is_array)
+        {
+            if(this.shape.size()==v.shape.size())
+            {
+                int index=0,size=1;
+                for(int i=this.shape.size()+1;i>=0;i++)
+                {
+                    index +=this.shape.get(i).eval(ctx)*size;
+                    size *=v.shape.get(i);
+                }
+                return v.value.get(index);
+            }
+            else  {
+                throw new Exception(this.name.name + "'s shape unmatch.");
+            }
+        }
+        else
+        {
+            throw new Exception(this.name.name+" is not a array.");
+        }
+
+    }
+
+    public OpName eval_runntime(ContextIR ctx, List<IR> ir) throws Exception {
+        VarInfo v = ctx.find_symbol(this.name.name);
+        if (v.is_array) {
+            if (this.shape.size() == v.shape.size()) {
+                OpName dest = new OpName("%" + ctx.get_id());
+                OpName index = new OpName("%" + ctx.get_id());
+                OpName size = new OpName("%" + ctx.get_id());
+                ir.add(new IR(IR.OpCode.SAL, index, this.shape.get(this.shape.size() - 1).eval_runtime(ctx, ir), new OpName(2), ""));
+
+                if (this.shape.size() != 1) {
+                    OpName tmp = new OpName("%" + ctx.get_id());
+                    ir.add(new IR(IR.OpCode.MOV, size, new OpName(4 * v.shape.get(this.shape.size() - 1)), ""));
+                }
+
+                for (int i = this.shape.size() - 2; i >= 0; i--) {
+                    OpName tmp = new OpName("%" + ctx.get_id());
+                    OpName tmp2 = new OpName("%" + ctx.get_id());
+                    ir.add(new IR(IR.OpCode.IMUL, tmp, size, this.shape.get(i).eval_runtime(ctx, ir), ""));
+                    ir.add(new IR(IR.OpCode.ADD, tmp2, index, tmp, ""));
+                    index = tmp2;
+                    if (i != 0) {
+                        OpName tmp3 = new OpName("%" + ctx.get_id());
+                        ir.add(new IR(IR.OpCode.IMUL, tmp3, size, new OpName(v.shape.get(i)), ""));
+                        size = tmp3;
+                    }
+                }
+
+                ir.add(new IR(IR.OpCode.LOAD, dest, new OpName(v.name), index, ""));
+                return dest;
+            } else {
+                throw new Exception(this.name.name + "'s shape unmatch.");
+            }
+        } else {
+            throw new Exception(this.name.name+" is not a array.");
         }
     }
 }
