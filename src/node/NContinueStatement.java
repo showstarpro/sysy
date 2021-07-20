@@ -6,7 +6,6 @@ import ir.OpName;
 import util.Pair;
 
 import java.io.PrintStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,8 +21,8 @@ public class NContinueStatement extends NStatement {
     @Override
     public void generate_ir(ContextIR ctx, List<IR> ir) throws Exception {
         ctx.loop_continue_symbol_snapshot.peek().add(ctx.symbol_table);
-        Map<Pair<Integer, String>, String> top = ctx.loop_continue_phi_move.peek();
-        for (Pair<Integer, String> i : top.keySet()) {
+        Map<Pair, String> top = ctx.loop_continue_phi_move.peek();
+        for (Pair i : top.keySet()) {
             ir.add(new IR(
                     IR.OpCode.MOV,
                     new OpName(top.get(i)),
