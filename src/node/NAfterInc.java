@@ -35,5 +35,12 @@ public class NAfterInc extends NStatement {
         n2.eval_runtime(ctx,ir);
         return new OpName(v.name);
     }
+
+    public void generate_ir(ContextIR ctx,List<IR> ir) throws Exception{
+        NNumber n0=new NNumber(1);
+        NBinaryExpression n1=new NBinaryExpression(lhs,this.op,n0);
+        NAssignment n2=new NAssignment(lhs,n1);
+        n2.generate_ir(ctx,ir);
+    }
 }
 
