@@ -1,8 +1,11 @@
 package node;
 
 import ir.ContextIR;
+import ir.IR;
+import ir.OpName;
 
 import java.io.PrintStream;
+import java.util.List;
 
 public class NEvalStatement extends NStatement {
     public NExpression value;
@@ -23,5 +26,9 @@ public class NEvalStatement extends NStatement {
     public int eval(ContextIR ctx)
     {
         return this.eval(ctx);
+    }
+
+    public OpName eval_runtime(ContextIR ctx, List<IR> ir) throws Exception{
+        return this.value.eval_runtime(ctx,ir);
     }
 }
