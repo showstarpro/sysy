@@ -9,7 +9,7 @@ import util.*;
 /**
  * 符号表
  */
-public class ContextIR {
+public class ContextIR implements Cloneable{
     public int id=1;
     public Vector<Map<String, VarInfo>> symbol_table;
     public Vector<Map<String, ConstInfo>> const_table;
@@ -104,6 +104,22 @@ public class ContextIR {
 
     public boolean in_loop(){
         return !loop_label.empty();
+    }
+
+    public ContextIR clone() throws CloneNotSupportedException {
+        ContextIR newborn=(ContextIR) super.clone();
+        newborn.id=this.id;
+        newborn.symbol_table=(Vector<Map<String, VarInfo>>)this.symbol_table.clone();
+        newborn.const_table=(Vector<Map<String, ConstInfo>>) this.const_table.clone();
+        newborn.const_assign_table=(Vector<Map<String, ConstInfo>>)this.const_assign_table.clone();
+        newborn.loop_label=(Stack<String>)this.loop_label.clone();
+        newborn.loop_continue_symbol_snapshot=(Stack<Vector<Vector<Map<String, VarInfo> > > >)this.loop_continue_symbol_snapshot.clone();
+        newborn.loop_break_symbol_snapshot=(Stack<Vector<Vector<Map<String, VarInfo> > > >)this.loop_break_symbol_snapshot.clone();
+        newborn.loop_continue_phi_move=(Stack<Map<Pair<Integer, String>, String>>)this.loop_continue_phi_move.clone();
+        newborn.loop_break_phi_move=(Stack<Map<Pair<Integer, String>, String>>)this.loop_break_phi_move.clone();
+        newborn.loop_var=(Stack<Vector<String>>)this.loop_var.clone();
+
+        return newborn;
     }
 
 }
