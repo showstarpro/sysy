@@ -154,38 +154,87 @@ public class NBinaryExpression extends NExpression {
                 String label=new String("COND"+ctx.get_id()+"_end");
                 List<IR> end = new ArrayList<>();
                 end.add(new IR(IR.OpCode.LABEL,label));
-                lhs= this.lhs.eval_runtime(ctx,ir);
-                ir.add(new IR(IR.OpCode.PHI_MOV,new OpName(1),""));
-                //修改到这儿
-//                ir.back().phi_block = end.begin();
-//                ir.emplace_back(lhs.else_op, label);
-//                auto rhs = this->rhs.eval_runntime(ctx, ir);
-//                ir.emplace_back(IR::OpCode::PHI_MOV, dest, rhs);
-//                ir.back().phi_block = end.begin();
-//
-//                ir.splice(ir.end(), end);
+                CondResult lhs1= this.lhs.eval_cond_runntime(ctx,ir);
+                ir.add(new IR(IR.OpCode.PHI_MOV,dest,new OpName(0),""));
+                ir.get(ir.size()-1).phi_block=end.iterator();//ir.back().phi_block = end.begin();可能有问题
+                ir.add(new IR(lhs1.else_op,label));
+                OpName rhs1=this.rhs.eval_runtime(ctx,ir);
+                ir.add(new IR(IR.OpCode.PHI_MOV,dest,rhs1,""));
+                ir.get(ir.size()-1).phi_block=end.iterator();
+                ir.addAll(end);
                 break;
-//            case OR: {
-//                std::string label = "COND" + std::to_string(ctx.get_id()) + "_end";
-//                IRList end;
-//                end.emplace_back(IR::OpCode::LABEL, label);
-//
-//                auto lhs = this->lhs.eval_cond_runntime(ctx, ir);
-//                ir.emplace_back(IR::OpCode::PHI_MOV, dest, OpName(1));
-//                ir.back().phi_block = end.begin();
-//                ir.emplace_back(lhs.then_op, label);
-//                auto rhs = this->rhs.eval_runntime(ctx, ir);
-//                ir.emplace_back(IR::OpCode::PHI_MOV, dest, rhs);
-//                ir.back().phi_block = end.begin();
-//
-//                ir.splice(ir.end(), end);
-//                break;
-//            }
+
+            case OR:
+                String label1=new String("COND"+ctx.get_id()+"_end");
+                List<IR> end1=new ArrayList<>();
+                end1.add(new IR(IR.OpCode.LABEL,label1));
+                CondResult lhs2=this.lhs.eval_cond_runntime(ctx,ir);
+                ir.add(new IR(IR.OpCode.PHI_MOV,dest,new OpName(1),""));
+                ir.get(ir.size()-1).phi_block=end1.iterator();
+                ir.add(new IR(lhs2.then_op,label1));
+                OpName rhs2=this.rhs.eval_runtime(ctx,ir);
+                ir.add(new IR(IR.OpCode.PHI_MOV,dest,rhs2,""));
+                ir.get(ir.size()-1).phi_block=end1.iterator();
+                ir.addAll(end1);
+                break;
+
             default:
                 throw new Exception("Unknow OP");
 
         }
         return dest;
     }
+
+
+    public CondResult eval_cond_runntime(ContextIR ctx,List<IR> ir) throws Exception {
+        CondResult ret = new CondResult();
+        OpName lhs = new OpName(),rhs = new OpName();
+        if(this.op!=AND&&this.op!=OR)
+        {
+            lhs=this.lhs.eval_runtime(ctx, ir);
+            rhs=this.rhs.eval_runtime(ctx, ir);
+        }
+        switch (this.op)
+        {
+            case EQ:
+                ir.add(new IR(IR.OpCode.CMP,new OpName(),lhs,rhs,""));
+                ret.then_op=IR.OpCode.JEQ;
+                ret.else_op=IR.OpCode.JNE;
+                break;
+            case NE:
+                ir.add(new IR(IR.OpCode.CMP,new OpName(),lhs,rhs,""));
+                ret.then_op=IR.OpCode.JNE;
+                ret.else_op=IR.OpCode.JEQ;
+                break;
+            case GT:
+                ir.add(new IR(IR.OpCode.CMP,new OpName(),lhs,rhs,""));
+                ret.then_op=IR.OpCode.JGT;
+                ret.else_op=IR.OpCode.JLE;
+                break;
+            case GE:
+                ir.add(new IR(IR.OpCode.CMP,new OpName(),lhs,rhs,""));
+                ret.then_op=IR.OpCode.JGE;
+                ret.else_op=IR.OpCode.JLT;
+                break;
+            case LT:
+                ir.add(new IR(IR.OpCode.CMP,new OpName(),lhs,rhs,""));
+                ret.then_op=IR.OpCode.JLT;
+                ret.else_op=IR.OpCode.JGE;
+                break;
+            case LE:
+                ir.add(new IR(IR.OpCode.CMP,new OpName(),lhs,rhs,""));
+                ret.then_op=IR.OpCode.JLE;
+                ret.else_op=IR.OpCode.JGT;
+                break;
+            default:
+                ir.add(new IR(IR.OpCode.CMP,new OpName(),this.eval_runntime(ctx, ir),new OpName(0),""));
+                ret.then_op=IR.OpCode.JNE;
+                ret.else_op=IR.OpCode.JEQ;
+                break;
+        }
+        return ret;
+    }
+
+
 
 }
