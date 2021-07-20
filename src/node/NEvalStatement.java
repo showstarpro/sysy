@@ -23,12 +23,15 @@ public class NEvalStatement extends NStatement {
         value.print(indentation+1, true, out);
     }
 
-    public int eval(ContextIR ctx)
-    {
-        return this.eval(ctx);
+    public int eval(ContextIR ctx) throws Exception {
+        return this.value.eval(ctx);
     }
 
     public OpName eval_runtime(ContextIR ctx, List<IR> ir) throws Exception{
         return this.value.eval_runtime(ctx,ir);
+    }
+    @Override
+    public void generate_ir(ContextIR ctx, List<IR> ir) throws Exception {
+        this.value.eval_runtime(ctx,ir);
     }
 }
