@@ -1,9 +1,12 @@
 package node;
 
 import ir.ContextIR;
+import ir.IR;
+import ir.OpName;
 import parser.sym;
 
 import java.io.PrintStream;
+import java.util.List;
 
 public class NUnaryExpression extends NExpression {
     public int op;
@@ -38,5 +41,26 @@ public class NUnaryExpression extends NExpression {
                 throw new Exception("Unknow OP");
 
         }
+    }
+
+    public OpName eval_runtime(ContextIR ctx, List<IR> ir) throws Exception{
+        //未考虑optimize
+        OpName dest=new OpName("%"+ctx.get_id());
+        switch (this.op){
+            case sym.PLUS:
+                return rhs.eval_runtime(ctx,ir);
+            case sym.MINUS:
+                ir.add(new IR(IR.OpCode.SUB,dest,new OpName(0),rhs.eval_runtime(ctx,ir),""));
+                return dest;
+            case sym.NOT:
+                ir.add(new IR(IR.OpCode.CMP, new OpName(),new OpName(0),rhs.eval_runtime(ctx,ir),""));
+                ir.add(new IR(IR.OpCode.MOVEQ,dest,new OpName(0),""));
+                ir.add(new IR(IR.OpCode.MOVNE,dest,new OpName(1),""));
+                return dest;
+            default:
+                throw new Exception("Unknow OP");
+                break;
+        }
+
     }
 }

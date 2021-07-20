@@ -1,8 +1,11 @@
 package node;
 
 import ir.ContextIR;
+import ir.IR;
+import ir.OpName;
 
 import java.io.PrintStream;
+import java.util.List;
 
 public class NNumber extends NExpression {
     public int value;
@@ -27,5 +30,9 @@ public class NNumber extends NExpression {
     public int eval(ContextIR ctx)
     {
         return this.value;
+    }
+
+    public OpName eval_runtime(ContextIR ctx, List<IR> ir) {
+        return new OpName(this.value);
     }
 }
