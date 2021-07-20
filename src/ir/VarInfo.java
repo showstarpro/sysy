@@ -5,7 +5,7 @@ import java.util.Vector;
 /**
  * 表示一个变量 可以时普通变量也可以是数组
  */
-public class VarInfo {
+public class VarInfo implements Cloneable{
     public Vector<Integer> shape;
     public boolean is_array;
     public String name;
@@ -20,4 +20,14 @@ public class VarInfo {
         this.shape = shape;
         this.is_array = is_array;
     }
+
+    public VarInfo clone() throws CloneNotSupportedException {
+        VarInfo newborn=(VarInfo) super.clone();
+        newborn.name=this.name;
+        newborn.is_array=this.is_array;
+        newborn.shape=(Vector<Integer>) this.shape.clone();
+
+        return newborn;
+    }
+
 }
