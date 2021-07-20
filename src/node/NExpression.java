@@ -20,4 +20,9 @@ public class NExpression extends Node {
         throw new Exception("can not eval this value at run time.");
     }
 
+
+    public CondResult eval_cond_runntime(ContextIR ctx,List<IR> ir) throws Exception {
+        return null;
+    }
+
 }
