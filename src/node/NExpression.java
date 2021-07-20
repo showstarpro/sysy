@@ -20,4 +20,12 @@ public class NExpression extends Node {
         throw new Exception("can not eval this value at run time.");
     }
 
+    public CondResult eval_cond_runtime(ContextIR ctx,List<IR> ir) throws Exception{
+        CondResult ret;
+        OpName dest=new OpName("%"+ctx.get_id());
+        ir.add(new IR(IR.OpCode.CMP,dest,this.eval_runtime(ctx,ir)));
+        ret.then_op=IR.OpCode.JNE;
+        ret.else_op=IR.OpCode.JEQ;
+        return ret;
+    }
 }
