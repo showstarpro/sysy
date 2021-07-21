@@ -59,7 +59,7 @@ public class NUnaryExpression extends NExpression {
                 return dest;
             default:
                 throw new Exception("Unknow OP");
-                break;
+//                break;
         }
 
     }
