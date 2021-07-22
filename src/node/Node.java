@@ -27,7 +27,7 @@ public class Node {
     }
 
     public void generate_ir(ContextIR ctx, List<IR> ir) throws Exception {
-        this.print(0, false, System.out);
+//        this.print(0, false, System.out);
         throw new Exception("Can't generate IR for this node.");
     }
 }
