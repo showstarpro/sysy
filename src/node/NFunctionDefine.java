@@ -78,7 +78,7 @@ public class NFunctionDefine extends Node {
 
         // return type
         if (this.return_type == sym.INT) {
-            ir.add(new IR(IR.OpCode.RET, "0"));
+            ir.add(new IR(IR.OpCode.RET, new OpName(0),""));
         } else {
             ir.add(new IR(IR.OpCode.RET, ""));
         }
