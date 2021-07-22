@@ -35,7 +35,7 @@ public class NIdentifier extends NExpression {
             }
     }
 
-    public OpName eval_runntime(ContextIR ctx, List<IR> ir) throws Exception {
+    public OpName eval_runtime(ContextIR ctx, List<IR> ir) throws Exception {
         VarInfo v=ctx.find_symbol(this.name);
 
         if(v.is_array)

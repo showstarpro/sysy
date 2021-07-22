@@ -56,7 +56,7 @@ public class NArrayIdentifier extends NIdentifier {
 
     }
 
-    public OpName eval_runntime(ContextIR ctx, List<IR> ir) throws Exception {
+    public OpName eval_runtime(ContextIR ctx, List<IR> ir) throws Exception {
         VarInfo v = ctx.find_symbol(this.name.name);
         if (v.is_array) {
             if (this.shape.size() == v.shape.size()) {
