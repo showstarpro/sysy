@@ -62,6 +62,7 @@ public class IR {
         this.op2 = op2;
         this.op3 = op3;
         this.label = label;
+        this.op_code = op_code;
     }
 
     public IR(OpCode op_code, OpName dest, OpName op1, OpName op2,
@@ -71,7 +72,7 @@ public class IR {
         this.op2 = op2;
         this.op3 = new OpName();
         this.label = label;
-
+        this.op_code = op_code;
     }
 
     public IR(OpCode op_code, OpName dest, OpName op1, String label) {
@@ -80,6 +81,7 @@ public class IR {
         this.op2 = new OpName();
         this.op3 = new OpName();
         this.label = label;
+        this.op_code = op_code;
     }
 
     public IR(OpCode op_code, OpName dest, String label) {
@@ -88,6 +90,7 @@ public class IR {
         this.op2 = new OpName();
         this.op3 = new OpName();
         this.label = label;
+        this.op_code = op_code;
     }
 
     public IR(OpCode op_code, String label) {
@@ -96,6 +99,7 @@ public class IR {
         this.op2 = new OpName();
         this.op3 = new OpName();
         this.label = label;
+        this.op_code = op_code;
 
     }
 
