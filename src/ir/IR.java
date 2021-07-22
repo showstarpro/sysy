@@ -276,19 +276,19 @@ public class IR {
 
     private static void printSpace(int n, PrintStream out){
         for(int i = 0;i<n;i++){
-            out.print(' ');
+            out.print(" ");
         }
     }
 
     private static void F(OpName op, PrintStream out){
         if(op.type == OpName.Type.Imm){
-            out.print(op.value+'\t');
+            out.print(op.value+"\t");
         }
         else if(op.type == OpName.Type.Var){
-            out.print(op.name+'\t');
+            out.print(op.name+"\t");
         }
         else if(op.type == OpName.Type.Null){
-            out.print('\t');
+            out.print("\t");
         }
     }
 }
