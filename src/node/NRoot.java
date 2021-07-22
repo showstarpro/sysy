@@ -1,6 +1,10 @@
 package node;
 
+import ir.ContextIR;
+import ir.IR;
+
 import java.io.PrintStream;
+import java.util.List;
 import java.util.Vector;
 
 public class NRoot extends Node {
@@ -16,6 +20,13 @@ public class NRoot extends Node {
 
         for (Node i : body) {
             i.print(indentation + 1, body.indexOf(i) == body.size() - 1,out );
+        }
+    }
+
+    @Override
+    public void generate_ir(ContextIR ctx, List<IR> ir) throws Exception {
+        for(Node i :this.body){
+            i.generate_ir(ctx,ir);
         }
     }
 }

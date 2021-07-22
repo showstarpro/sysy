@@ -1,6 +1,10 @@
 package node;
 
+import ir.ContextIR;
+import ir.IR;
+
 import java.io.PrintStream;
+import java.util.List;
 import java.util.Vector;
 
 public class NDeclareStatement extends NStatement {
@@ -21,6 +25,13 @@ public class NDeclareStatement extends NStatement {
         out.println("Declare Type： "+ type);
         for(NDeclare i : list){
             i.print(indentation+1, list.indexOf(i)==list.size()-1, out);
+        }
+    }
+
+    @Override
+    public void generate_ir(ContextIR ctx, List<IR> ir) throws Exception {
+        for(NDeclare i: list){
+            i.generate_ir(ctx,ir);
         }
     }
 }
