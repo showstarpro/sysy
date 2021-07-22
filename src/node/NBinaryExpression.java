@@ -97,14 +97,14 @@ public class NBinaryExpression extends NExpression {
         return ans;
     }
 
-    OpName eval_runntime(ContextIR ctx, List<IR> ir) throws Exception {
+    public OpName eval_runtime(ContextIR ctx, List<IR> ir) throws Exception {
         OpName dest =new OpName("%"+ctx.get_id());
         OpName lhs=new OpName() ,rhs=new OpName();
 
         if(this.op!=sym.AND&&this.op!=sym.OR)
         {
             lhs=this.lhs.eval_runtime(ctx,ir);
-            rhs=this.lhs.eval_runtime(ctx,ir);
+            rhs=this.rhs.eval_runtime(ctx,ir);
         }
         switch (this.op)
         {
@@ -227,7 +227,7 @@ public class NBinaryExpression extends NExpression {
                 ret.else_op=IR.OpCode.JGT;
                 break;
             default:
-                ir.add(new IR(IR.OpCode.CMP,new OpName(),this.eval_runntime(ctx, ir),new OpName(0),""));
+                ir.add(new IR(IR.OpCode.CMP,new OpName(),this.eval_runtime(ctx, ir),new OpName(0),""));
                 ret.then_op=IR.OpCode.JNE;
                 ret.else_op=IR.OpCode.JEQ;
                 break;
