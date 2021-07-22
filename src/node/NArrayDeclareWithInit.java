@@ -3,6 +3,7 @@ package node;
 import ir.ContextIR;
 import ir.IR;
 import ir.OpName;
+import ir.VarInfo;
 
 import java.io.PrintStream;
 import java.util.List;
@@ -40,11 +41,29 @@ public class NArrayDeclareWithInit extends NDeclare {
             size *= i;
         }
         // init value
-        Vector<Integer> init_value;
+        Vector<Integer> init_value = new Vector<>();
         if (ctx.is_global()) {
             ir.add(new IR(IR.OpCode.DATA_BEGIN, "@&" + this.name.name.name));
             //分析初始化值
-
+            ArrayDeclareWithInit(this.value.value_list, this.name.shape,init_value, 0,ctx,ir);
+            ir.add(new IR(IR.OpCode.DATA_END,""));
+            ctx.insert_symbol(this.name.name.name,
+                    new VarInfo("@&"+this.name.name.name,true,shape));
+        }else {
+            ctx.insert_symbol(this.name.name.name,
+                    new VarInfo("%&"+ctx.get_id(),true,shape));
+            ir.add(new IR(IR.OpCode.MALLOC_IN_STACK,
+            new OpName(ctx.find_symbol(this.name.name.name).name),
+            new OpName(size*4),""));
+            ir.add(new IR(IR.OpCode.SET_ARG, new OpName(0),
+                    new OpName(ctx.find_symbol(this.name.name.name).name),
+                    ""));
+            ir.add(new IR(IR.OpCode.SET_ARG,new OpName(1),
+                    new OpName(0),""));
+            ir.add(new IR(IR.OpCode.SET_ARG, new OpName(2),
+                    new OpName(size*4),""));
+            ir.add(new IR(IR.OpCode.CALL, "memset"));
+            ArrayDeclareWithInit(this.value.value_list, this.name.shape, init_value,0,ctx,ir);
         }
 
     }
@@ -62,8 +81,8 @@ public class NArrayDeclareWithInit extends NDeclare {
         if (index >= shape.size()) return;
         int size = 1;
         int write_size = 0;
-        for (NExpression i : shape) {
-            size *= i.eval(ctx);
+        for(int i = index;i<shape.size();i++){
+            size *= shape.get(i).eval(ctx);
         }
         int size_this_shape = size / shape.get(index).eval(ctx);
         for (NArrayDeclareInitValue i : v) {
