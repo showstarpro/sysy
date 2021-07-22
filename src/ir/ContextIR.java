@@ -115,16 +115,112 @@ public class ContextIR implements Cloneable {
     public ContextIR clone() throws CloneNotSupportedException {
         ContextIR newborn = (ContextIR) super.clone();
         newborn.id = this.id;
-        newborn.symbol_table = (Vector<Map<String, VarInfo>>) this.symbol_table.clone();
-        newborn.const_table = (Vector<Map<String, ConstInfo>>) this.const_table.clone();
-        newborn.const_assign_table = (Vector<Map<String, ConstInfo>>) this.const_assign_table.clone();
-        newborn.loop_label = (Stack<String>) this.loop_label.clone();
-        newborn.loop_continue_symbol_snapshot = (Stack<Vector<Vector<Map<String, VarInfo>>>>) this.loop_continue_symbol_snapshot.clone();
-        newborn.loop_break_symbol_snapshot = (Stack<Vector<Vector<Map<String, VarInfo>>>>) this.loop_break_symbol_snapshot.clone();
-        newborn.loop_continue_phi_move = (Stack<Map<Pair, String>>) this.loop_continue_phi_move.clone();
-        newborn.loop_break_phi_move = (Stack<Map<Pair, String>>) this.loop_break_phi_move.clone();
-        newborn.loop_var = (Stack<Vector<String>>) this.loop_var.clone();
+//        newborn.symbol_table = (Vector<Map<String, VarInfo>>) this.symbol_table.clone();
+        newborn.symbol_table = new Vector<>();
+        for (Map<String, VarInfo> i : this.symbol_table) {
+            Map<String, VarInfo> tmp = new HashMap<>();
+            for(Map.Entry<String, VarInfo> j: i.entrySet()){
+                VarInfo tv = j.getValue().clone();
+                tmp.put(j.getKey(),tv);
+            }
+            newborn.symbol_table.add(tmp);
+        }
 
+//        newborn.const_table = (Vector<Map<String, ConstInfo>>) this.const_table.clone();
+        newborn.const_table = new Vector<>();
+        for (Map<String, ConstInfo> i : this.const_table) {
+            Map<String, ConstInfo> tmp = new HashMap<>();
+            for(Map.Entry<String, ConstInfo> j: i.entrySet()){
+                ConstInfo tv = j.getValue().clone();
+                tmp.put(j.getKey(),tv);
+            }
+            newborn.const_table.add(tmp);
+        }
+//        newborn.const_assign_table = (Vector<Map<String, ConstInfo>>) this.const_assign_table.clone();
+        newborn.const_assign_table = new Vector<>();
+        for (Map<String, ConstInfo> i : this.const_assign_table) {
+            Map<String, ConstInfo> tmp = new HashMap<>();
+            for(Map.Entry<String, ConstInfo> j: i.entrySet()){
+                ConstInfo tv = j.getValue().clone();
+                tmp.put(j.getKey(),tv);
+            }
+            newborn.const_assign_table.add(tmp);
+        }
+//        newborn.loop_label = (Stack<String>) this.loop_label.clone();
+        newborn.loop_label = new Stack<>();
+        for(String s: this.loop_label){
+            newborn.loop_label.push(s);
+        }
+//        newborn.loop_continue_symbol_snapshot = (Stack<Vector<Vector<Map<String, VarInfo>>>>) this.loop_continue_symbol_snapshot.clone();
+        newborn.loop_continue_symbol_snapshot = new Stack<>();
+        for(Vector<Vector<Map<String, VarInfo>>> i: this.loop_continue_symbol_snapshot){
+            Vector<Vector<Map<String, VarInfo>>> tmp1 = new Vector<>();
+            for(Vector<Map<String, VarInfo>> j : i){
+                Vector<Map<String, VarInfo>> tmp2 = new Vector<>();
+                for(Map<String, VarInfo> k: j){
+                    Map<String, VarInfo> tmp3 = new HashMap<>();
+                    for(Map.Entry<String, VarInfo> l: k.entrySet()){
+                        VarInfo tv = l.getValue().clone();
+                        tmp3.put(l.getKey(),tv);
+                    }
+                    tmp2.add(tmp3);
+                }
+                tmp1.addElement(tmp2);
+            }
+            newborn.loop_continue_symbol_snapshot.push(tmp1);
+        }
+
+//        newborn.loop_break_symbol_snapshot = (Stack<Vector<Vector<Map<String, VarInfo>>>>) this.loop_break_symbol_snapshot.clone();
+        newborn.loop_break_symbol_snapshot = new Stack<>();
+        for(Vector<Vector<Map<String, VarInfo>>> i: this.loop_break_symbol_snapshot){
+            Vector<Vector<Map<String, VarInfo>>> tmp1 = new Vector<>();
+            for(Vector<Map<String, VarInfo>> j : i){
+                Vector<Map<String, VarInfo>> tmp2 = new Vector<>();
+                for(Map<String, VarInfo> k: j){
+                    Map<String, VarInfo> tmp3 = new HashMap<>();
+                    for(Map.Entry<String, VarInfo> l: k.entrySet()){
+                        VarInfo tv = l.getValue().clone();
+                        tmp3.put(l.getKey(),tv);
+                    }
+                    tmp2.add(tmp3);
+                }
+                tmp1.addElement(tmp2);
+            }
+            newborn.loop_break_symbol_snapshot.push(tmp1);
+        }
+
+//        newborn.loop_continue_phi_move = (Stack<Map<Pair, String>>) this.loop_continue_phi_move.clone();
+        newborn.loop_continue_phi_move = new Stack<>();
+        for(Map<Pair, String> i: this.loop_continue_phi_move){
+            Map<Pair, String> tmp = new HashMap<>();
+            for(Map.Entry<Pair,String> j: i.entrySet()){
+                Pair tp = (Pair)j.getKey().clone();
+                tmp.put(tp, j.getValue());
+            }
+            newborn.loop_continue_phi_move.push(tmp);
+        }
+
+
+//        newborn.loop_break_phi_move = (Stack<Map<Pair, String>>) this.loop_break_phi_move.clone();
+        newborn.loop_break_phi_move = new Stack<>();
+        for(Map<Pair, String> i: this.loop_break_phi_move){
+            Map<Pair, String> tmp = new HashMap<>();
+            for(Map.Entry<Pair,String> j: i.entrySet()){
+                Pair tp = (Pair)j.getKey().clone();
+                tmp.put(tp, j.getValue());
+            }
+            newborn.loop_break_phi_move.push(tmp);
+        }
+
+//        newborn.loop_var = (Stack<Vector<String>>) this.loop_var.clone();
+        newborn.loop_var = new Stack<>();
+        for(Vector<String> v: this.loop_var){
+            Vector<String> tmp = new Vector<>();
+            for(String s : v){
+                tmp.addElement(s);
+            }
+            newborn.loop_var.push(tmp);
+        }
         return newborn;
     }
 

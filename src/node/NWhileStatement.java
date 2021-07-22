@@ -41,19 +41,21 @@ public class NWhileStatement extends NStatement {
         ctx.loop_var.push(new Vector<>());
 
         // BEFORE
-        ContextIR ctx_before = (ContextIR) ctx.clone();
+        ContextIR ctx_before = ctx.clone();
         List<IR> ir_before = new ArrayList<>();
 
         // COND
-        ContextIR ctx_cond = (ContextIR) ctx_before.clone();
+        ContextIR ctx_cond = ctx_before.clone();
         List<IR> ir_cond = new ArrayList<>();
-        ir_cond.add(new IR(IR.OpCode.LABEL, "LOOP_" + ctx.loop_label.peek() + "_BEGIN"));
+        ir_cond.add(new IR(IR.OpCode.LABEL, "LOOP_" +
+                ctx.loop_label.peek() + "_BEGIN"));
 
         CondResult cond = this.cond.eval_cond_runntime(ctx_cond, ir_cond);
 
         // JMP
         List<IR> ir_jmp = new ArrayList<>();
-        ir_jmp.add(new IR(cond.else_op, "LOOP_" + ctx.loop_label.peek() + "_END"));
+        ir_jmp.add(new IR(cond.else_op, "LOOP_" + ctx.loop_label.peek()
+                + "_END"));
 
         // DO(fake)
         ContextIR ctx_do_fake = (ContextIR) ctx_cond.clone();
@@ -63,8 +65,21 @@ public class NWhileStatement extends NStatement {
         ctx_do_fake.loop_continue_phi_move.push(new HashMap<>());
         ctx_do_fake.loop_break_phi_move.push(new HashMap<>());
         this.dostmt.generate_ir(ctx_do_fake, ir_do_fake);
+        Vector<Map<String, VarInfo>> tmp1 = new Vector<>();
+
+//        Vector<Vector<Map<String, VarInfo>>> tmp1 = new Vector<>();
+//        for(Vector<Map<String, VarInfo>> j : ctx_do_fake.symbol_table){
+//            Vector<Map<String, VarInfo>> tmp2 = new Vector<>();
+        for (Map<String, VarInfo> k : ctx_do_fake.symbol_table) {
+            Map<String, VarInfo> tmp3 = new HashMap<>();
+            for (Map.Entry<String, VarInfo> l : k.entrySet()) {
+                VarInfo tv = l.getValue().clone();
+                tmp3.put(l.getKey(), tv);
+            }
+            tmp1.add(tmp3);
+        }
         ctx_do_fake.loop_continue_symbol_snapshot.peek().addElement(
-                ctx_do_fake.symbol_table);
+                tmp1);
 
         // DO
         ContextIR ctx_do = (ContextIR) ctx_cond.clone();
@@ -74,13 +89,15 @@ public class NWhileStatement extends NStatement {
         ctx_do.loop_continue_phi_move.push(new HashMap<>());
         ctx_do.loop_break_phi_move.push(new HashMap<>());
         for (int i = 0; i < ctx_do_fake.symbol_table.size(); i++) {
+            // todo: entryset
             for (String symbol : ctx_do_fake.symbol_table.get(i).keySet()) {
                 for (int j = 0;
                      j < ctx_do_fake.loop_continue_symbol_snapshot.peek().size(); j++) {
                     if (!ctx_do_fake.symbol_table.get(i).get(symbol).
-                            name.equals(ctx_do_fake.loop_continue_symbol_snapshot.peek().
-                            get(j).get(i).get(symbol).name)) {
-                        ctx_do.loop_continue_phi_move.peek().put(new Pair(i, symbol), "%" + ctx_do.get_id());
+                            name.equals(ctx_do_fake.loop_continue_symbol_snapshot.
+                            peek().get(j).get(i).get(symbol).name)) {
+                        ctx_do.loop_continue_phi_move.peek().
+                                put(new Pair(i, symbol), "%" + ctx_do.get_id());
                         break;
                     }
                 }
@@ -104,7 +121,8 @@ public class NWhileStatement extends NStatement {
         }
         ir_do.add(new IR(IR.OpCode.LABEL, "LOOP_" + ctx.loop_label.peek() + "_DO"));
         this.dostmt.generate_ir(ctx_do, ir_do);
-        for (Map.Entry<Pair, String> i : ctx_do.loop_continue_phi_move.peek().entrySet()) {
+        for (Map.Entry<Pair, String> i :
+                ctx_do.loop_continue_phi_move.peek().entrySet()) {
             ir_do.add(new IR(IR.OpCode.PHI_MOV, new OpName(i.getValue()),
                     new OpName(ctx_do.symbol_table.get(i.getKey().first).get(i.getKey().second).name), ""));
 
@@ -130,13 +148,15 @@ public class NWhileStatement extends NStatement {
         List<IR> ir_continue = new ArrayList<>();
         ir_continue.add(new IR(IR.OpCode.LABEL, "LOOP_" + ctx.loop_label.peek() + "_CONTINUE"));
         ir_cond.clear();
-        ir_cond.add(new IR(IR.OpCode.LABEL, "LOOP_" + ctx.loop_label.peek() + "_BEGIN"));
+        ir_cond.add(new IR(IR.OpCode.LABEL,
+                "LOOP_" + ctx.loop_label.peek() + "_BEGIN"));
 
         for (int i = 0; i < ctx_before.symbol_table.size(); i++) {
             for (Map.Entry<String, VarInfo> symbol_before :
                     ctx_before.symbol_table.get(i).entrySet()) {
 
-                VarInfo symbol_continue = ctx_continue.symbol_table.get(i).get(symbol_before.getKey());
+                VarInfo symbol_continue =
+                        ctx_continue.symbol_table.get(i).get(symbol_before.getKey());
                 if (!symbol_before.getValue().name.equals(symbol_continue.name)) {
                     String new_name = "%" + ctx_before.get_id();
                     ir_before.add(new IR(IR.OpCode.PHI_MOV, new OpName(new_name),
@@ -144,7 +164,8 @@ public class NWhileStatement extends NStatement {
                     ir_before.get(ir_before.size() - 1).phi_block = ir_cond.iterator(); //ir_before.back().phi_block = ir_cond.begin();
                     ir_continue.add(new IR(IR.OpCode.PHI_MOV, new OpName(new_name),
                             new OpName(symbol_continue.name), ""));
-                    ctx_before.symbol_table.get(i).get(symbol_before.getKey()).name = new_name;
+                    ctx_before.symbol_table.get(i).get(symbol_before.getKey()).name
+                            = new_name;
                     ctx_before.loop_var.peek().addElement(new_name);
                 }
             }
@@ -172,8 +193,23 @@ public class NWhileStatement extends NStatement {
         ctx_do_fake.loop_continue_phi_move.push(new HashMap<>());
         ctx_do_fake.loop_break_phi_move.push(new HashMap<>());
         this.dostmt.generate_ir(ctx_do_fake, ir_do_fake);
+        Vector<Map<String, VarInfo>> tmp = new Vector<>();
+
+//        Vector<Vector<Map<String, VarInfo>>> tmp1 = new Vector<>();
+//        for(Vector<Map<String, VarInfo>> j : ctx_do_fake.symbol_table){
+//            Vector<Map<String, VarInfo>> tmp2 = new Vector<>();
+        for (Map<String, VarInfo> k : ctx_do_fake.symbol_table) {
+            Map<String, VarInfo> tmp3 = new HashMap<>();
+            for (Map.Entry<String, VarInfo> l : k.entrySet()) {
+                VarInfo tv = l.getValue().clone();
+                tmp3.put(l.getKey(), tv);
+            }
+            tmp.add(tmp3);
+        }
+//            tmp1.addElement(tmp2);
+//        }
         ctx_do_fake.loop_continue_symbol_snapshot.peek().addElement(
-                ctx_do_fake.symbol_table);
+                tmp);
 
         // DO real
         ctx_do = ctx_cond.clone();
@@ -188,7 +224,8 @@ public class NWhileStatement extends NStatement {
         ctx_do.loop_break_phi_move.push(new HashMap<>());
 
         for (int i = 0; i < ctx_do_fake.symbol_table.size(); i++) {
-            for (Map.Entry<String, VarInfo> symbol : ctx_do_fake.symbol_table.get(i).entrySet()) {
+            for (Map.Entry<String, VarInfo> symbol : ctx_do_fake.symbol_table.get(i)
+                    .entrySet()) {
                 for (int j = 0;
                      j < ctx_do_fake.loop_continue_symbol_snapshot.peek().size(); j++) {
                     if (!symbol.getValue().name.equals(
@@ -289,7 +326,18 @@ public class NWhileStatement extends NStatement {
                 }
             }
         }
-        ctx = ctx_cond.clone();
+        ContextIR t = ctx_cond.clone();
+        ctx.id = t.id;
+        ctx.symbol_table = t.symbol_table;
+        ctx.const_assign_table = t.const_assign_table;
+        ctx.const_table = t.const_table;
+        ctx.loop_label = t.loop_label;
+        ctx.loop_continue_symbol_snapshot = t.loop_continue_symbol_snapshot;
+        ctx.loop_break_symbol_snapshot = t.loop_break_symbol_snapshot;
+        ctx.loop_continue_phi_move = t.loop_continue_phi_move;
+        ctx.loop_break_phi_move = t.loop_break_phi_move;
+        ctx.loop_var = t.loop_var;
+
         ctx.id = ctx_continue.id;
         ir.addAll(ir_before);
         ir.addAll(ir_cond);

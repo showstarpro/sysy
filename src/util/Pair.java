@@ -24,7 +24,7 @@ public class Pair {
     }
 
     @Override
-    protected Object clone() throws CloneNotSupportedException {
+    public Object clone() throws CloneNotSupportedException {
         Pair newobj = new Pair();
         newobj.first = this.first;
         newobj.second = new String( this.second);

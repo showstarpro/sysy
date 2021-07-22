@@ -62,7 +62,7 @@ public class NIfStatement extends NStatement {
         {
             for(Map.Entry<String, VarInfo> s:ctx_then.symbol_table.get(i).entrySet())
             {
-                if(s.getValue().name.equals(ctx_else.symbol_table.get(i).get(s.getKey()).name))
+                if(!s.getValue().name.equals(ctx_else.symbol_table.get(i).get(s.getKey()).name))
                 {
                     VarInfo v=ctx.find_symbol(s.getKey());
                     assert(!v.is_array);
@@ -83,7 +83,7 @@ public class NIfStatement extends NStatement {
         {
             ir.add(new IR(IR.OpCode.JMP,"IF_"+id+"_END"));
         }
-        ir.add(new IR(IR.OpCode.LABEL,"IF_"+id+"_end"));
+        ir.add(new IR(IR.OpCode.LABEL,"IF_"+id+"_ELSE"));
         ir.addAll(ir_else);
         ir.addAll(end);
 

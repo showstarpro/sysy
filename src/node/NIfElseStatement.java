@@ -65,13 +65,13 @@ public class NIfElseStatement extends NStatement {
         ctx.id=ctx_else.id;
 
         List<IR> end=new ArrayList<>();
-        end.add(new IR(IR.OpCode.LABEL,"IF_"+"_END"));
+        end.add(new IR(IR.OpCode.LABEL,"IF_"+id+"_END"));
 
         for(int i=0;i<ctx_then.symbol_table.size();i++)
         {
             for(Map.Entry<String, VarInfo> s:ctx_then.symbol_table.get(i).entrySet())
             {
-                if(s.getValue().name.equals(ctx_else.symbol_table.get(i).get(s.getKey()).name))
+                if(!s.getValue().name.equals(ctx_else.symbol_table.get(i).get(s.getKey()).name))
                 {
                     VarInfo v=ctx.find_symbol(s.getKey());
                     assert(!v.is_array);

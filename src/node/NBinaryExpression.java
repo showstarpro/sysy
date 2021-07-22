@@ -126,29 +126,29 @@ public class NBinaryExpression extends NExpression {
                 break;
             case EQ:
                 ir.add(new IR(IR.OpCode.CMP,new OpName(),lhs,rhs,""));
-                ir.add(new IR(IR.OpCode.MOVEQ,dest,new OpName(1),"0"));
+                ir.add(new IR(IR.OpCode.MOVEQ,dest,new OpName(1),new OpName(0), ""));
                 break;
             case NE:
                 ir.add(new IR(IR.OpCode.CMP,new OpName(),lhs,rhs,""));
-                ir.add(new IR(IR.OpCode.MOVNE,dest,new OpName(1),"0"));
+                ir.add(new IR(IR.OpCode.MOVNE,dest,new OpName(1),new OpName(0), ""));
                 break;
 
             case GT:
                 ir.add(new IR(IR.OpCode.CMP,new OpName(),lhs,rhs,""));
-                ir.add(new IR(IR.OpCode.MOVGT,dest,new OpName(1),"0"));
+                ir.add(new IR(IR.OpCode.MOVGT,dest,new OpName(1),new OpName(0), ""));
                 break;
 
             case GE:
                 ir.add(new IR(IR.OpCode.CMP,new OpName(),lhs,rhs,""));
-                ir.add(new IR(IR.OpCode.MOVGE,dest,new OpName(1),"0"));
+                ir.add(new IR(IR.OpCode.MOVGE,dest,new OpName(1),new OpName(0), ""));
                 break;
             case LT:
                 ir.add(new IR(IR.OpCode.CMP,new OpName(),lhs,rhs,""));
-                ir.add(new IR(IR.OpCode.MOVLT,dest,new OpName(1),"0"));
+                ir.add(new IR(IR.OpCode.MOVLT,dest,new OpName(1),new OpName(0), ""));
                 break;
             case LE:
                 ir.add(new IR(IR.OpCode.CMP,new OpName(),lhs,rhs,""));
-                ir.add(new IR(IR.OpCode.MOVLE,dest,new OpName(1),"0"));
+                ir.add(new IR(IR.OpCode.MOVLE,dest,new OpName(1),new OpName(0), ""));
                 break;
             case AND:
                 String label=new String("COND"+ctx.get_id()+"_end");

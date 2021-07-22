@@ -54,7 +54,7 @@ public class NAssignment extends NStatement {
                 throw new Exception("Can't assign to a array. ");
             }else{
                 if(rhs.type==OpName.Type.Var&&rhs.name.charAt(0)=='%'&&
-                        (v.name.charAt(0)=='%'||v.name.substring(0,4).equals("$arg"))&&
+                        (v.name.charAt(0)=='%'|| v.name.startsWith("$arg"))&&
                         v.name.charAt(0)!='@'){
                     if(ctx.in_loop()){
                         boolean lhs_is_loop_var =false,rhs_is_loop_var=false;
