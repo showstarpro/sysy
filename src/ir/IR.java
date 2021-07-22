@@ -270,6 +270,7 @@ public class IR {
         F(this.op1,out);
         F(this.op2,out);
         F(this.op3,out);
+        out.println(this.label);
 
     }
 
