@@ -3,6 +3,7 @@ import java.util.*;
 
 import node.*;
 import parser.*;
+import ir.*;
 
 public class Main {
 
@@ -12,6 +13,13 @@ public class Main {
             Object result = p.parse().value;
             NRoot root = p.root;
             root.print(0,false,System.out);
+            List<IR> ir = new ArrayList<>();
+            ContextIR ctx = new ContextIR();
+            root.generate_ir(ctx, ir);
+            for(IR i:ir){
+                i.print(System.out, false);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
