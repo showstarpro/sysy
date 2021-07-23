@@ -244,7 +244,8 @@ FuncFParamOne ::= BType:i1 ident:i2 {: RESULT = new NFunctionDefineArg(i1,i2); :
 FuncFParamArray ::= FuncFParamOne:i1 LSQUARE RSQUARE {:
                     RESULT = new NFunctionDefineArg(
                         i1.type, 
-                        new NArrayIdentifier(new NArrayIdentifier(i1.name)));
+                        //new NArrayIdentifier(new NArrayIdentifier(i1.name)));
+                        new NArrayIdentifier((i1.name)));
                         ((NArrayIdentifier)(RESULT.name)).shape.addElement(new NNumber(1));
                 :}
                | FuncFParamArray:i1 LSQUARE Exp:i3 RSQUARE {: RESULT = i1; ((NArrayIdentifier)(RESULT.name)).shape.addElement(i3); :}
