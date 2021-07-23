@@ -108,6 +108,7 @@ public class NArrayIdentifier extends NIdentifier {
                     OpName tmp=new OpName("%"+ctx.get_id());
                     OpName tmp2=new OpName("%"+ctx.get_id());
                     ir.add(new IR(IR.OpCode.IMUL,tmp,size,this.shape.get(i).eval_runtime(ctx,ir),""));
+                    ir.add(new IR(IR.OpCode.ADD, tmp2, index, tmp,""));
                     index=tmp2;
                     if(i != 0){
                         OpName tmp3=new OpName("%"+ctx.get_id());
