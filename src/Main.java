@@ -12,7 +12,7 @@ public class Main {
             parser p = new parser(new Lexer(new FileReader(argv[0])));
             Object result = p.parse().value;
             NRoot root = p.root;
-            root.print(0,false,System.out);
+//            root.print(0,false,System.out);
             List<IR> ir = new ArrayList<>();
             ContextIR ctx = new ContextIR();
             root.generate_ir(ctx, ir);
