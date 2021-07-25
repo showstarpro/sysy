@@ -21,7 +21,7 @@ public class ContextAsm {
     public List<IR> ir;
     public int[] stack_size={6 * 4, 4, 0, 0};
 
-    public Iterator<IR> function_begin_it;
+    public ListIterator<IR> function_begin_it;
     public HashMap<String,Integer> stack_offset_map=new HashMap<>();//java中hashmap和c++的unordered_map一样吗
     public HashMap<IR,Integer> ir_to_time=new HashMap<>();
 
@@ -46,9 +46,9 @@ public class ContextAsm {
 
     public boolean has_function_call=false;
 
-    public ContextAsm(List<IR> ir,Iterator<IR> function_begin_it,PrintStream log_out){
+    public ContextAsm(List<IR> ir,ListIterator<IR> function_begin_it,PrintStream log_out){
         this.ir=ir;
-        this.function_begin_it=function_begin_it;
+        this.function_begin_it=ir.listIterator(function_begin_it.nextIndex());
         this.log_out=log_out;
         for(int i=0;i<7;i++)//?
             this.savable_reg.set(i);
@@ -90,7 +90,7 @@ public class ContextAsm {
             }
         }
     }
-    public void set_var_latest_use_timestamp(IR cur) throws Exception{
+    public void set_var_latest_use_timestamp(IR cur){
         if(cur.op_code!=IR.OpCode.MALLOC_IN_STACK){
             F(cur,cur.op1);
             F(cur,cur.op2);
