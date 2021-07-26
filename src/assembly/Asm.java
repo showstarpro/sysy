@@ -58,7 +58,7 @@ public class Asm {
             ctx.set_var_define_timestamp(irs.get(i));
         }
 
-        for (int i = begin_index; i != end_index; i++) {
+        for (int i = end_index-1; i != begin_index-1; i--) {
             ctx.set_var_latest_use_timestamp(irs.get(i));
         }
 
@@ -115,6 +115,7 @@ public class Asm {
                             }
                         }
                     }
+                    ctx.get_specified_reg_for(i.getValue(),reg);
                 } else {
                     if (!i.getValue().startsWith("%")) continue;
                     boolean conflict = false;
