@@ -1,7 +1,6 @@
 package assembly;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
+import util.Multimap;
 import ir.IR;
 import ir.OpName;
 
@@ -24,11 +23,10 @@ public class ContextAsm {
     public HashMap<IR,Integer> ir_to_time=new HashMap<>();
 
     public HashMap<String,Integer>var_define_timestamp=new HashMap<>();
-    public Multimap<Integer, String> var_define_timestamp_heap= ArrayListMultimap.create();
+    public Multimap<Integer, String> var_define_timestamp_heap= new Multimap<>();
 
     public HashMap<String,Integer> var_latest_use_timestamp=new HashMap<>();
-    public Multimap<Integer,String>var_latest_use_timestamp_heap=ArrayListMultimap.create();
-
+    public Multimap<Integer,String>var_latest_use_timestamp_heap=new Multimap<>();
     public BitSet savable_reg=new BitSet(11);
     public BitSet used_reg=new BitSet(11);
 
