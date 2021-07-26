@@ -1,14 +1,12 @@
 package assembly;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multiset;
+import com.google.common.collect.Multimap;
 import ir.IR;
+import ir.OpName;
 
 import java.io.PrintStream;
 import java.util.*;
-
-import com.google.common.collect.Multimap;
-import ir.OpName;
 
 import static java.lang.Integer.min;
 
@@ -46,12 +44,16 @@ public class ContextAsm {
 
     public boolean has_function_call=false;
 
+    {
+        savable_reg.set(4,11);
+        reg_to_var = new HashMap<>();
+    }
+
     public ContextAsm(List<IR> ir,ListIterator<IR> function_begin_it,PrintStream log_out){
         this.ir=ir;
         this.function_begin_it=ir.listIterator(function_begin_it.nextIndex());
         this.log_out=log_out;
-        for(int i=0;i<7;i++)//?
-            this.savable_reg.set(i);
+
     }
 
 
@@ -331,10 +333,10 @@ public class ContextAsm {
                 else if(op.name.charAt(0)=='@'){
                     if(op.name.charAt(1)!='&'){
                         out.println("    MOV32 "+reg+","+rename(op.name));
-                        out.println("    LDR "+reg+", [" + ", #0]");
+                        out.println("    LDR "+reg+", [" + reg + ", #0]");
                     }
                     else
-                        out.println("    MOV32 "+", "+rename(op.name));
+                        out.println("    MOV32 "+reg+", "+rename(op.name));
                 }
                 else if(op.name.charAt(0)=='$'){
                     int offset=resolve_stack_offset(op.name);

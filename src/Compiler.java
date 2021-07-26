@@ -1,11 +1,12 @@
 import java.io.*;
 import java.util.*;
 
+import assembly.Asm;
 import node.*;
 import parser.*;
 import ir.*;
 
-public class Main {
+public class Compiler {
 
     static public void main(String argv[]) {
         try {
@@ -19,6 +20,7 @@ public class Main {
             for(IR i:ir){
                 i.print(System.out, false);
             }
+            Asm.generate_asm(ir, System.out);
 
         } catch (Exception e) {
             e.printStackTrace();

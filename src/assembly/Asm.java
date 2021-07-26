@@ -3,7 +3,6 @@ package assembly;
 import ir.IR;
 import ir.OpName;
 
-import javax.xml.crypto.OctetStreamData;
 import java.io.PrintStream;
 import java.util.*;
 
@@ -37,7 +36,7 @@ public class Asm {
             } else if (ir.op_code == IR.OpCode.FUNCTION_END) {
                 generate_function_asm(irs, out, function_begin_it, outter_it);
             }
-
+            outter_it.next();
         }
     }
 
@@ -156,7 +155,7 @@ public class Asm {
                 out.println(".text");
                 out.println(".global " + ir.label);
                 out.println(".type " + ir.label + ", %function");
-                out.println(ir.label + ";");
+                out.println(ir.label + ":");
                 if (stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3] > 256) {
                     ctx.load("r12",
                             new OpName(stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3]),
@@ -221,7 +220,7 @@ public class Asm {
                 if (!op1_in_reg) {
                     ctx.load("r" + op1, ir.op1, out);
                 }
-                out.print("     " + "ADD" + " r" + dest + ", r" + op1 + ", ");
+                out.print("    " + "ADD" + " r" + dest + ", r" + op1 + ", ");
                 if (op2_is_imm) {
                     out.println("#" + ir.op2.value);
                 } else {
@@ -509,48 +508,45 @@ public class Asm {
                     if (!op3_in_reg) ctx.load("r" + op3, ir.op3, out);
                     out.println("    STR r" + op3 + ", [r12]");
                 }
-            }
-            else if(ir.op_code== IR.OpCode.LOAD)
-            {
+            } else if (ir.op_code == IR.OpCode.LOAD) {
                 boolean dest_in_reg = ctx.var_in_reg(ir.dest.name);
                 int dest = dest_in_reg ? ctx.var_to_reg.get(ir.dest.name) : 12;
                 // op1 基地址
                 if (ir.op1.type == OpName.Type.Var &&
-                    ir.op1.name.startsWith( "%&") &&
-                    ir.op2.type == OpName.Type.Imm) {
-                int offset = ctx.resolve_stack_offset(ir.op1.name) + ir.op2.value;
-                ctx.load_from_stack_offset("r" + dest, offset, out,"LDR");
-                if (!dest_in_reg) {
-                    ctx.store_to_stack("r" +dest, ir.dest, out,"STR");
-                }
-            } else {
-                boolean op2_in_reg =
-                        ir.op2.type == OpName.Type.Var && ctx.var_in_reg(ir.op2.name);
-                int op1 = 11;
-                int op2 = op2_in_reg ? ctx.var_to_reg.get(ir.op2.name) : 12;
+                        ir.op1.name.startsWith("%&") &&
+                        ir.op2.type == OpName.Type.Imm) {
+                    int offset = ctx.resolve_stack_offset(ir.op1.name) + ir.op2.value;
+                    ctx.load_from_stack_offset("r" + dest, offset, out, "LDR");
+                    if (!dest_in_reg) {
+                        ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
+                    }
+                } else {
+                    boolean op2_in_reg =
+                            ir.op2.type == OpName.Type.Var && ctx.var_in_reg(ir.op2.name);
+                    int op1 = 11;
+                    int op2 = op2_in_reg ? ctx.var_to_reg.get(ir.op2.name) : 12;
 
-                if (!op2_in_reg) ctx.load("r" + op2, ir.op2, out);
-                ctx.load("r" + op1, ir.op1, out);
-                out.println( "    ADD r12, r" + op1 + ", r" + op2);
-                out.println( "    LDR r" + dest + ", [r12]" );
-                if (!dest_in_reg) {
-                    ctx.store_to_stack("r" + dest, ir.dest, out,"STR");
+                    if (!op2_in_reg) ctx.load("r" + op2, ir.op2, out);
+                    ctx.load("r" + op1, ir.op1, out);
+                    out.println("    ADD r12, r" + op1 + ", r" + op2);
+                    out.println("    LDR r" + dest + ", [r12]");
+                    if (!dest_in_reg) {
+                        ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
+                    }
                 }
-            }
-            }
-            else if (ir.op_code == IR.OpCode.RET) {
+            } else if (ir.op_code == IR.OpCode.RET) {
                 if (ir.op1.type != OpName.Type.Null) {
                     ctx.load("r0", ir.op1, out);
                 }
-                if (ctx.has_function_call) ctx.load("lr",new  OpName("$ra"), out);
+                if (ctx.has_function_call) ctx.load("lr", new OpName("$ra"), out);
 
                 // 恢复现场
                 int offset = 4;
-                ctx.load_from_stack_offset("r11", stack_size[2] + stack_size[3], out,"LDR");
-                for (int j = 0; j <11; j++) {
+                ctx.load_from_stack_offset("r11", stack_size[2] + stack_size[3], out, "LDR");
+                for (int j = 0; j < 11; j++) {
                     if (non_volatile_reg.get(j) != ctx.savable_reg.get(j)) {
                         ctx.load_from_stack_offset(
-                                "r" + j, stack_size[2] + stack_size[3] + offset, out,"LDR");
+                                "r" + j, stack_size[2] + stack_size[3] + offset, out, "LDR");
                         offset += 4;
                     }
                 }
@@ -559,17 +555,15 @@ public class Asm {
                     ctx.load("r12",
                             new OpName(stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3]),
                             out);
-                    out.println("    ADD sp, sp, r12" );
+                    out.println("    ADD sp, sp, r12");
                 } else {
-                    out.println( "    ADD sp, sp, #"
-                            +( stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3])
+                    out.println("    ADD sp, sp, #"
+                            + (stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3])
                     );
                 }
-                out.println( "    MOV PC, LR");
-            }
-
-    else if (ir.op_code == IR.OpCode.LABEL) {
-                out.println( ir.label + ":");
+                out.println("    MOV PC, LR");
+            } else if (ir.op_code == IR.OpCode.LABEL) {
+                out.println(ir.label + ":");
             }
 
 
