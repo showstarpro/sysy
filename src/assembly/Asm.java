@@ -30,7 +30,7 @@ public class Asm {
             } else if (ir.op_code == IR.OpCode.DATA_WORD) {
                 out.println(".word " + ir.dest.value);
             } else if (ir.op_code == IR.OpCode.DATA_SPACE) {
-                out.println(".space" + ir.dest.value);
+                out.println(".space " + ir.dest.value);
             } else if (ir.op_code == IR.OpCode.FUNCTION_BEGIN) {
                 function_begin_it = irs.listIterator(outter_it.nextIndex());
             } else if (ir.op_code == IR.OpCode.FUNCTION_END) {
