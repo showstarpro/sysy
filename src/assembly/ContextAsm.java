@@ -67,7 +67,7 @@ public class ContextAsm {
     }
 
     public int resolve_stack_offset(String name) throws Exception{
-        if(name.substring(0,4).equals("$arg")){
+        if(name.startsWith("$arg")){
             int id=Integer.parseInt(name.substring(4));
             if(id < 4)
                 throw new Exception(name + "is not in mem. ");
@@ -98,9 +98,15 @@ public class ContextAsm {
             F(cur, cur.dest);
         }
         if(cur.op_code==IR.OpCode.SET_ARG && cur.dest.value < 4){
-            String name="$arg"+(cur.dest.value)+":"+(ir_to_time.get(cur.phi_block.next()));//不知道对不对
-            var_latest_use_timestamp.put(name,ir_to_time.get(cur.phi_block.next()));//同上
-            var_latest_use_timestamp_heap.put(ir_to_time.get(cur.phi_block.next()),name);
+            String name;
+            if(cur.phi_block == null){
+                 name = "$arg"+(cur.dest.value)+":"+"0";
+            }else {
+                 name = "$arg" + (cur.dest.value) + ":" + (ir_to_time.get(cur.phi_block.next()));//不知道对不对
+            }
+
+            var_latest_use_timestamp.put(name,ir_to_time.get(cur));//同上
+            var_latest_use_timestamp_heap.put(ir_to_time.get(cur),name);
         }
         if(cur.op_code==IR.OpCode.IMUL && cur.op1.type==OpName.Type.Var){
             var_latest_use_timestamp.compute(cur.op1.name,(key,value)->value+1);
@@ -135,7 +141,13 @@ public class ContextAsm {
             }
         }
         if(cur.op_code==IR.OpCode.SET_ARG && cur.dest.value<4){
-            String name="$arg"+cur.dest.value+ir_to_time.get(cur.phi_block.next());
+            String name;
+            if(cur.phi_block == null){
+                name = "$arg"+(cur.dest.value)+":"+"0";
+            }else {
+                name = "$arg" + (cur.dest.value) + ":" + (ir_to_time.get(cur.phi_block.next()));//不知道对不对
+            }
+
             var_define_timestamp.put(name,ir_to_time.get(cur));
             var_define_timestamp_heap.put(ir_to_time.get(cur),name);
         }
