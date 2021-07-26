@@ -10,11 +10,11 @@ public class Compiler {
 
     static public void main(String argv[]) {
         try {
-            String from = argv[0];
+            String from = argv[3];
             String out;
             PrintStream file=null;
             if (argv.length > 1) {
-                out = argv[3];
+                out = argv[2];
                 file = new PrintStream(
                         new FileOutputStream(out, false));
             }
