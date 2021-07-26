@@ -53,7 +53,7 @@ public class IR {
     public OpCode op_code;
     public String label;
     public OpName op1, op2, op3, dest;
-    public Iterator<IR> phi_block;
+    public Iterator<IR> phi_block ;
 
     public IR(OpCode op_code, OpName dest, OpName op1, OpName op2, OpName op3,
               String label) {
