@@ -54,8 +54,8 @@ public class NUnaryExpression extends NExpression {
                 return dest;
             case sym.NOT:
                 ir.add(new IR(IR.OpCode.CMP, new OpName(),new OpName(0),rhs.eval_runtime(ctx,ir),""));
-                ir.add(new IR(IR.OpCode.MOVEQ,dest,new OpName(0),""));
-                ir.add(new IR(IR.OpCode.MOVNE,dest,new OpName(1),""));
+                ir.add(new IR(IR.OpCode.MOVEQ,dest,new OpName(1),new OpName(0),""));
+                ir.add(new IR(IR.OpCode.MOVNE,dest,new OpName(0),new OpName(1),""));
                 return dest;
             default:
                 throw new Exception("Unknow OP");
