@@ -1,8 +1,10 @@
 package ir;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 public class IR {
    public enum OpCode {
@@ -53,8 +55,13 @@ public class IR {
     public OpCode op_code;
     public String label;
     public OpName op1, op2, op3, dest;
-    public Iterator<IR> phi_block ;
+//    public ListIterator<IR> phi_block ;
+    public List<List<IR>> phi_block=new ArrayList<>();
 
+    public IR()
+    {
+
+    }
     public IR(OpCode op_code, OpName dest, OpName op1, OpName op2, OpName op3,
               String label) {
         this.dest = dest;
