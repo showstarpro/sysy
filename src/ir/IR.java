@@ -41,7 +41,7 @@ public class IR {
         LABEL,            // label:
         DATA_BEGIN,       //.data
         DATA_WORD,        //.word
-        DATA_SPACE,       //.space
+        DATA_SPACE,       //.space 
         DATA_END,         // nothing
         FUNCTION_BEGIN,   // FUNCTION_BEGIN
         FUNCTION_END,     // FUNCTION_END

@@ -30,7 +30,7 @@ public class Asm {
             } else if (ir.op_code == IR.OpCode.DATA_WORD) {
                 out.println(".word " + ir.dest.value);
             } else if (ir.op_code == IR.OpCode.DATA_SPACE) {
-                out.println(".space" + ir.dest.value);
+                out.println(".space " + ir.dest.value);
             } else if (ir.op_code == IR.OpCode.FUNCTION_BEGIN) {
                 function_begin_it = irs.listIterator(outter_it.nextIndex());
             } else if (ir.op_code == IR.OpCode.FUNCTION_END) {
@@ -58,7 +58,7 @@ public class Asm {
             ctx.set_var_define_timestamp(irs.get(i));
         }
 
-        for (int i = end_index-1; i != begin_index-1; i--) {
+        for (int i = end_index - 1; i != begin_index - 1; i--) {
             ctx.set_var_latest_use_timestamp(irs.get(i));
         }
 
@@ -115,7 +115,7 @@ public class Asm {
                             }
                         }
                     }
-                    ctx.get_specified_reg_for(i.getValue(),reg);
+                    ctx.get_specified_reg_for(i.getValue(), reg);
                 } else {
                     if (!i.getValue().startsWith("%")) continue;
                     boolean conflict = false;
@@ -362,17 +362,19 @@ public class Asm {
                 }
                 out.println("    CMP r" + op1 + ", r" + op2);
             } else if (ir.op_code == IR.OpCode.JMP) {
-                out.println("   " + "B" + ir.label);
+                out.println("   " + "B " + ir.label);
             } else if (ir.op_code == IR.OpCode.JEQ) {
-                out.println("   " + "BEQ" + ir.label);
+                out.println("   " + "BEQ " + ir.label);
             } else if (ir.op_code == IR.OpCode.JNE) {
-                out.println("   " + "BLE" + ir.label);
+                out.println("   " + "BNE " + ir.label);
             } else if (ir.op_code == IR.OpCode.JLE) {
-                out.println("   " + "BLT" + ir.label);
+                out.println("   " + "BLE " + ir.label);
+            } else if (ir.op_code == IR.OpCode.JLT) {
+                out.println("   " + "BLT " + ir.label);
             } else if (ir.op_code == IR.OpCode.JGE) {
-                out.println("   " + "BGE" + ir.label);
+                out.println("   " + "BGE " + ir.label);
             } else if (ir.op_code == IR.OpCode.JGT) {
-                out.println("   " + "BGT" + ir.label);
+                out.println("   " + "BGT " + ir.label);
             } else if (ir.op_code == IR.OpCode.MOVEQ) {
                 boolean dest_in_reg = ctx.var_in_reg(ir.dest.name);
                 int dest = dest_in_reg ? ctx.var_to_reg.get(ir.dest.name) : 12;
