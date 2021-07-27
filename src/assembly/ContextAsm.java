@@ -177,7 +177,7 @@ public class ContextAsm {
     public void get_specified_reg(int reg_id) {
         assert !used_reg.get(reg_id);
         if (savable_reg.get(reg_id)) {
-            savable_reg.set(reg_id, 0);
+            savable_reg.set(reg_id, false);
             stack_size[1] += 4;
         }
         used_reg.set(reg_id);
@@ -251,7 +251,7 @@ public class ContextAsm {
             if (!used_reg.get(i) && savable_reg.get(i)) {
                 used_reg.set(i);
                 stack_size[1] += 4;
-                savable_reg.set(i, 0);
+                savable_reg.set(i, false);
                 return i;
             }
         int id = begin;
