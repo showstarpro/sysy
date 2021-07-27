@@ -99,10 +99,11 @@ public class ContextAsm {
         }
         if (cur.op_code == IR.OpCode.SET_ARG && cur.dest.value < 4) {
             String name;
-            if (cur.phi_block == null) {
+            if (cur.phi_block.size()==0) {
                 name = "$arg" + (cur.dest.value) + ":" + "0";
+                ir_to_time.put(new IR(),0);
             } else {
-                name = "$arg" + (cur.dest.value) + ":" + (ir_to_time.get(cur.phi_block.next()));//不知道对不对
+                name = "$arg" + (cur.dest.value) + ":" + (ir_to_time.get(cur.phi_block.get(cur.phi_block.size()-1).get(0)));//不知道对不对
             }
 
             var_latest_use_timestamp.put(name, ir_to_time.get(cur));//同上
@@ -132,7 +133,17 @@ public class ContextAsm {
         } else if (cur.op_code == IR.OpCode.PHI_MOV) {
             if (cur.dest.type == OpName.Type.Var) {
                 if (!var_define_timestamp.containsKey(cur.dest.name)) {
-                    int time = min(ir_to_time.get(cur.phi_block.next()), ir_to_time.get(cur));
+
+                    IR temp;
+                    if(cur.phi_block.size()==0)
+                    {
+                        temp = new IR();
+                        ir_to_time.put(temp,0);
+                    }
+                    else {
+                        temp = cur.phi_block.get(cur.phi_block.size()-1).get(0);
+                    }
+                    int time = min(ir_to_time.get(temp), ir_to_time.get(cur));
                     var_define_timestamp.put(cur.dest.name, time);
                     var_define_timestamp_heap.put(time, cur.dest.name);
                 }
@@ -141,10 +152,11 @@ public class ContextAsm {
         }
         if (cur.op_code == IR.OpCode.SET_ARG && cur.dest.value < 4) {
             String name;
-            if (cur.phi_block == null) {
+            if (cur.phi_block.size()==0) {
                 name = "$arg" + (cur.dest.value) + ":" + "0";
+                ir_to_time.put(new IR(),0);
             } else {
-                name = "$arg" + (cur.dest.value) + ":" + (ir_to_time.get(cur.phi_block.next()));//不知道对不对
+                name = "$arg" + (cur.dest.value) + ":" + (ir_to_time.get(cur.phi_block.get(cur.phi_block.size()-1).get(0)));//不知道对不对
             }
 
             var_define_timestamp.put(name, ir_to_time.get(cur));
@@ -186,7 +198,7 @@ public class ContextAsm {
     public void move_reg(String name, int reg_dest) {
         assert !used_reg.get(reg_dest);
         int old_reg = var_to_reg.get(name);
-        used_reg.set(old_reg, 0);
+        used_reg.set(old_reg, false);
         get_specified_reg(reg_dest);
         reg_to_var.remove(old_reg);
         var_to_reg.compute(name, (key, value) -> reg_dest);
@@ -196,7 +208,7 @@ public class ContextAsm {
     public void overflow_var(String name) {
         if (var_to_reg.containsKey(name)) {
             final int reg_id = var_to_reg.get(name);
-            used_reg.set(reg_id, 0);
+            used_reg.set(reg_id, false);
             var_to_reg.remove(name);
             reg_to_var.remove(reg_id);
         }
