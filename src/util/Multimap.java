@@ -6,7 +6,7 @@ public class Multimap<K,V>{
     Map<K, Vector<V>> map;
 
     public Multimap(){
-        map = new HashMap<>();
+        map = new TreeMap<>();
     }
 
     public void put(K key, V value){
