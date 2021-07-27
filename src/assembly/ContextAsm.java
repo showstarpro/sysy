@@ -100,10 +100,10 @@ public class ContextAsm {
         if (cur.op_code == IR.OpCode.SET_ARG && cur.dest.value < 4) {
             String name;
             if (cur.phi_block.size()==0) {
-                name = "$arg" + (cur.dest.value) + ":" + "0";
+                name = "$arg:" + (cur.dest.value) + ":" + "0";
                 ir_to_time.put(new IR(),0);
             } else {
-                name = "$arg" + (cur.dest.value) + ":" + (ir_to_time.get(cur.phi_block.get(cur.phi_block.size()-1).get(0)));//不知道对不对
+                name = "$arg:" + (cur.dest.value) + ":" + (ir_to_time.get(cur.phi_block.get(cur.phi_block.size()-1).get(0)));//不知道对不对
             }
 
             var_latest_use_timestamp.put(name, ir_to_time.get(cur));//同上
@@ -115,7 +115,7 @@ public class ContextAsm {
 
         if (cur.op_code == IR.OpCode.CALL || cur.op_code == IR.OpCode.IDIV || cur.op_code == IR.OpCode.MOD) {
             for (int i = 0; i < 4; i++) {
-                String name = "$arg" + i + ir_to_time.get(cur);
+                String name = "$arg:" + i + ":" +ir_to_time.get(cur);
                 var_latest_use_timestamp.put(name, ir_to_time.get(cur));
                 var_latest_use_timestamp_heap.put(ir_to_time.get(cur), name);
             }
@@ -153,10 +153,10 @@ public class ContextAsm {
         if (cur.op_code == IR.OpCode.SET_ARG && cur.dest.value < 4) {
             String name;
             if (cur.phi_block.size()==0) {
-                name = "$arg" + (cur.dest.value) + ":" + "0";
+                name = "$arg:" + (cur.dest.value) + ":" + "0";
                 ir_to_time.put(new IR(),0);
             } else {
-                name = "$arg" + (cur.dest.value) + ":" + (ir_to_time.get(cur.phi_block.get(cur.phi_block.size()-1).get(0)));//不知道对不对
+                name = "$arg:" + (cur.dest.value) + ":" + (ir_to_time.get(cur.phi_block.get(cur.phi_block.size()-1).get(0)));//不知道对不对
             }
 
             var_define_timestamp.put(name, ir_to_time.get(cur));
@@ -164,7 +164,7 @@ public class ContextAsm {
         }
         if (cur.op_code == IR.OpCode.CALL || cur.op_code == IR.OpCode.IDIV || cur.op_code == IR.OpCode.MOD) {
             for (int i = 0; i < 4; i++) {
-                String name = "$arg" + i + ir_to_time.get(cur);
+                String name = "$arg:" + i + ir_to_time.get(cur);
                 var_define_timestamp.put(name, ir_to_time.get(cur));
                 var_define_timestamp_heap.put(ir_to_time.get(cur), name);
             }
@@ -176,7 +176,7 @@ public class ContextAsm {
             if (used_reg.get(i))
                 if (!reg_to_var.containsKey(i) || !var_latest_use_timestamp.containsKey(reg_to_var.get(i)) || cur_time >= var_latest_use_timestamp.get(reg_to_var.get(i))) {
                     used_reg.set(i, false);
-                    log_out.println("# [log]" + cur_time + " expire" + reg_to_var.get(i) + " r" + i);
+                    log_out.println("# [log]" + cur_time + " expire " + reg_to_var.get(i) + " r" + i);
                     reg_to_var.remove(i);
                 }
         }
