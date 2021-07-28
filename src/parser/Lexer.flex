@@ -54,12 +54,12 @@ EndOfLineComment     = "//" [^\r\n]* {LineTerminator}?
     [0-9]+              {
                           String s = yytext();
                           if(s.startsWith("0")){
-                                return symbol(sym.INTEGER_VALUE, Integer.parseInt(s,8));
+                                return symbol(sym.INTEGER_VALUE, Integer.parseUnsignedInt(s,8));
                           }else {
-                              return symbol(sym.INTEGER_VALUE, new Integer(s));
+                              return symbol(sym.INTEGER_VALUE, Integer.parseUnsignedInt(s));
                               }
                         }
-    ("0x"|"0X")[0-9a-fA-F]+    {String s = yytext(); return symbol(sym.INTEGER_VALUE, new Integer(Integer.parseInt(s.replaceAll("^0[x|X]", ""), 16))); }
+    ("0x"|"0X")[0-9a-fA-F]+    {String s = yytext(); return symbol(sym.INTEGER_VALUE, new Integer(Integer.parseUnsignedInt(s.replaceAll("^0[x|X]", ""), 16))); }
 
      \"                             { string.setLength(0); yybegin(STRING); }
 

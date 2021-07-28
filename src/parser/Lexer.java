@@ -840,9 +840,9 @@ public class Lexer implements java_cup.runtime.Scanner {
           case 14:
             { String s = yytext();
                           if(s.startsWith("0")){
-                                return symbol(sym.INTEGER_VALUE, Integer.parseInt(s,8));
+                                return symbol(sym.INTEGER_VALUE, Integer.parseUnsignedInt(s,8));
                           }else {
-                              return symbol(sym.INTEGER_VALUE, new Integer(s));
+                              return symbol(sym.INTEGER_VALUE, Integer.parseUnsignedInt(s));
                               }
             }
             // fall through
@@ -975,7 +975,7 @@ public class Lexer implements java_cup.runtime.Scanner {
             // fall through
           case 88: break;
           case 40:
-            { String s = yytext(); return symbol(sym.INTEGER_VALUE, new Integer(Integer.parseInt(s.replaceAll("^0[x|X]", ""), 16)));
+            { String s = yytext(); return symbol(sym.INTEGER_VALUE, new Integer(Integer.parseUnsignedInt(s.replaceAll("^0[x|X]", ""), 16)));
             }
             // fall through
           case 89: break;
