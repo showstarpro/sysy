@@ -374,7 +374,7 @@ public class ContextAsm {
             String tmp_reg = reg.equals("r11") ? "r12" : "r11";
             load_imm(tmp_reg, offset, out);
             out.println("    ADD " + tmp_reg + ", sp, " + tmp_reg);
-            out.println("    " + op + " " + reg + ", [" + offset + ", #0]");
+            out.println("    " + op + " " + reg + ", [" + tmp_reg + ", #0]");
         } else {
             out.println("    " + op + " " + reg + ", [sp, #" + offset + "]");
         }
@@ -385,7 +385,7 @@ public class ContextAsm {
             String tmp_reg = reg.equals("r11") ? "r12" : "r11";
             load_imm(tmp_reg, offset, out);
             out.println("    ADD " + tmp_reg + ", sp, " + tmp_reg);
-            out.println("    " + op + " " + reg + ", [" + offset + ", #0]");
+            out.println("    " + op + " " + reg + ", [" + tmp_reg + ", #0]");
         } else {
             out.println("    " + op + " " + reg + ", [sp,#" + offset + "]");
         }
