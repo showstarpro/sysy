@@ -32,7 +32,7 @@ parser code {:
 /** Terminals */
 
 terminal Integer    INTEGER_VALUE;
-terminal String     IDENTIFIER;
+terminal String     IDENTIFIER, STRING_LITERAL;
 
 terminal Integer    IF, ELSE, WHILE, FOR, BREAK, CONTINUE, RETURN;
 terminal Integer    CONST, INT, VOID;
@@ -210,6 +210,7 @@ PrimaryExp ::= LVal:i1 {: RESULT = i1; :}
           | Number:i1 {: RESULT = i1; :}
           | LPAREN LOrExp:i2 RPAREN  {: RESULT = i2; :}
           | AssignStmtWithoutSemi:i1 {: RESULT = i1; :}
+          | STRING_LITERAL:i1  {: RESULT = new NString(i1); :}
           ;
 
 ArrayItem ::= LVal:i1 LSQUARE Exp:i3 RSQUARE {: RESULT = new NArrayIdentifier(i1); RESULT.shape.addElement(i3); :}

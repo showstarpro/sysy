@@ -13,7 +13,8 @@ import node.*;
 
 %cup
 
-%{  
+%{
+    StringBuffer string = new StringBuffer();
     private Symbol symbol(int type) {
         return new Symbol(type, yyline, yycolumn);
     }
@@ -28,6 +29,8 @@ LineTerminator = \r|\n|\r\n
 WhiteSpace     = {LineTerminator} | [ \t\f]
 TraditionalComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
 EndOfLineComment     = "//" [^\r\n]* {LineTerminator}?
+
+%state STRING
 
 %%
    
@@ -57,7 +60,9 @@ EndOfLineComment     = "//" [^\r\n]* {LineTerminator}?
                               }
                         }
     ("0x"|"0X")[0-9a-fA-F]+    {String s = yytext(); return symbol(sym.INTEGER_VALUE, new Integer(Integer.parseInt(s.replaceAll("^0[x|X]", ""), 16))); }
-    
+
+     \"                             { string.setLength(0); yybegin(STRING); }
+
     "="            { return symbol(sym.ASSIGN, new Integer(sym.ASSIGN)); }
     "=="            { return symbol(sym.EQ, new Integer(sym.EQ)); }
     "!="            { return symbol(sym.NE, new Integer(sym.NE)); }
@@ -96,4 +101,17 @@ EndOfLineComment     = "//" [^\r\n]* {LineTerminator}?
 
 /* error */ 
 [^]                    { throw new Error("Illegal character <"+yytext()+">"); }
+}
+
+<STRING> {
+         \"                             { yybegin(YYINITIAL);
+                                               return symbol(sym.STRING_LITERAL,
+                                               string.toString()); }
+              [^\n\r\"\\]+                   { string.append( yytext() ); }
+              \\t                            { string.append('\t'); }
+              \\n                            { string.append('\n'); }
+
+              \\r                            { string.append('\r'); }
+              \\\"                           { string.append('\"'); }
+              \\                             { string.append('\\'); }
 }

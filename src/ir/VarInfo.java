@@ -12,6 +12,7 @@ public class VarInfo implements Cloneable{
 
     public VarInfo() {
         shape = new Vector<>();
+
     }
 
     public VarInfo(String name, boolean is_array, Vector<Integer> shape) {
@@ -19,6 +20,13 @@ public class VarInfo implements Cloneable{
         this.name = name;
         this.shape = shape;
         this.is_array = is_array;
+    }
+
+    public VarInfo(String name, boolean is_array, int shape){
+        this();
+        this.name = name;
+        this.is_array = is_array;
+        this.shape.addElement(shape);
     }
 
     public VarInfo clone() throws CloneNotSupportedException {

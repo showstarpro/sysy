@@ -50,6 +50,14 @@ public class ContextIR implements Cloneable {
 
     public ContextIR() {
 
+        this.insert_symbol("_sysy_l1", new VarInfo("@&^_sysy_l1", true, 1024));
+        this.insert_symbol("_sysy_l2", new VarInfo("@&^_sysy_l2", true, 1024));
+        this.insert_symbol("_sysy_h", new VarInfo("@&^_sysy_h", true, 1024));
+        this.insert_symbol("_sysy_m", new VarInfo("@&^_sysy_m", true, 1024));
+        this.insert_symbol("_sysy_s", new VarInfo("@&^_sysy_s", true, 1024));
+        this.insert_symbol("_sysy_us", new VarInfo("@&^_sysy_us", true, 1024));
+        this.insert_symbol("_sysy_idx", new VarInfo("@^_sysy_idx", false, new Vector<>()));
+
     }
 
     public int get_id() {
