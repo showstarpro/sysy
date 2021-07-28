@@ -74,7 +74,11 @@ public class ContextAsm {
             else return stack_size[1] + stack_size[2] + stack_size[3] + (id - 4) * 4 + (has_function_call ? 4 : 0);
         } else if (name.equals("$ra"))
             return stack_size[1] + stack_size[2] + stack_size[3];
-        return stack_offset_map.get(name) + stack_size[3];
+        int temp_size = 0;
+        if(stack_offset_map.get(name)!=null){
+            temp_size = stack_offset_map.get(name);
+        }
+        return temp_size + stack_size[3];
     }
 
     public void set_ir_timestamp(IR cur) {
