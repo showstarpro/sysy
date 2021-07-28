@@ -128,7 +128,6 @@ public class Asm {
                             break;
                         }
                     }
-
                     if (ctx.find_free_reg(conflict ? 4 : 0) != -1) {
                         ctx.get_specified_reg_for(i.getValue(),
                                 ctx.find_free_reg(conflict ? 4 : 0));
