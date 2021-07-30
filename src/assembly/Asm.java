@@ -101,7 +101,7 @@ public class Asm {
                     String temp_str = i.getValue().substring(5);
                     int cnt = 0;
                     while(Character.isDigit(temp_str.charAt(cnt++)));
-                    int reg = Integer.parseInt(temp_str.substring(0,cnt-1));
+                    int reg = Integer.parseUnsignedInt(temp_str.substring(0,cnt-1));
                     if (ctx.used_reg.get(reg)) {
                         String cur_var = ctx.reg_to_var.get(reg);
                         if (ctx.find_free_reg(4) != -1) {

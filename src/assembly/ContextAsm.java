@@ -68,7 +68,7 @@ public class ContextAsm {
 
     public int resolve_stack_offset(String name) throws Exception {
         if (name.startsWith("$arg")) {
-            int id = Integer.parseInt(name.substring(4));
+            int id = Integer.parseUnsignedInt(name.substring(4));
             if (id < 4)
                 throw new Exception(name + "is not in mem. ");
             else return stack_size[1] + stack_size[2] + stack_size[3] + (id - 4) * 4 + (has_function_call ? 4 : 0);
@@ -323,7 +323,7 @@ public class ContextAsm {
             load_imm(reg, op.value, out);
         } else if (op.type == OpName.Type.Var) {
             if (var_to_reg.containsKey(op.name)) {
-                if (Integer.parseInt(reg.substring(1)) != var_to_reg.get(op.name))
+                if (Integer.parseUnsignedInt(reg.substring(1)) != var_to_reg.get(op.name))
                     out.println("    MOV " + reg + ", r" + var_to_reg.get(op.name));
             } else {
                 if (op.name.charAt(0) == '%') {
