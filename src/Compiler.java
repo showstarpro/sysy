@@ -9,14 +9,16 @@ import ir.*;
 public class Compiler {
 
     static public void main(String argv[]) {
+        String out = null;
+        PrintStream file=null;
+        FileOutputStream outfile = null;
         try {
             String from = argv[3];
-            String out;
-            PrintStream file=null;
             if (argv.length > 1) {
                 out = argv[2];
+                outfile = new FileOutputStream(out, false);
                 file = new PrintStream(
-                        new FileOutputStream(out, false));
+                       outfile);
             }
 
             parser p = new parser(new Lexer(new FileReader(from)));
@@ -37,6 +39,24 @@ public class Compiler {
 
         } catch (Exception e) {
             e.printStackTrace();
+            // 删除生成的文件  看是不是CE了
+            try {
+                assert outfile != null;
+                outfile.close();
+                outfile = new FileOutputStream(out, false);
+                outfile.write("".getBytes());
+                outfile.close();
+
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        }finally {
+            try {
+                assert outfile != null;
+                outfile.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
