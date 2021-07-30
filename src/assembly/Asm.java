@@ -97,7 +97,7 @@ public class Asm {
             if (ctx.var_in_reg(i.getValue())) {
                 continue;
             } else {
-                if (i.getValue().startsWith("$args:")) {
+                if (i.getValue().startsWith("$arg:")) {
                     int reg = Integer.parseInt(i.getValue().substring(5));
                     if (ctx.used_reg.get(reg)) {
                         String cur_var = ctx.reg_to_var.get(reg);
