@@ -15,7 +15,7 @@ public class NNumber extends NExpression {
     }
 
     public NNumber(String value) {
-        this.value = Integer.parseInt(value);
+        this.value = Integer.parseUnsignedInt(value);
     }
 
     public NNumber(int value) {
