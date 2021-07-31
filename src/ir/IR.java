@@ -56,7 +56,8 @@ public class IR {
     public String label;
     public OpName op1, op2, op3, dest;
 //    public ListIterator<IR> phi_block ;
-    public List<List<IR>> phi_block=new ArrayList<>();
+//    public List<List<IR>> phi_block=new ArrayList<>();
+    public IR phi_block;     // 指向一个List<IR>里面的第一条IR
 
     public IR()
     {

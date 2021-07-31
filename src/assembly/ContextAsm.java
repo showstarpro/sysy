@@ -103,11 +103,13 @@ public class ContextAsm {
         }
         if (cur.op_code == IR.OpCode.SET_ARG && cur.dest.value < 4) {
             String name;
-            if (cur.phi_block.size()==0) {
+            if (cur.phi_block==null) {
                 name = "$arg:" + (cur.dest.value) + ":" + "0";
-                ir_to_time.put(new IR(),0);
+                IR temp = new IR();
+                cur.phi_block = temp;
+                ir_to_time.put(temp,0);
             } else {
-                name = "$arg:" + (cur.dest.value) + ":" + (ir_to_time.get(cur.phi_block.get(cur.phi_block.size()-1).get(0)));//不知道对不对
+                name = "$arg:" + (cur.dest.value) + ":" + (ir_to_time.get(cur.phi_block));//不知道对不对
             }
 
             var_latest_use_timestamp.put(name, ir_to_time.get(cur));//同上
@@ -139,13 +141,14 @@ public class ContextAsm {
                 if (!var_define_timestamp.containsKey(cur.dest.name)) {
 
                     IR temp;
-                    if(cur.phi_block.size()==0)
+                    if(cur.phi_block == null )
                     {
                         temp = new IR();
+                        cur.phi_block = temp;
                         ir_to_time.put(temp,0);
                     }
                     else {
-                        temp = cur.phi_block.get(cur.phi_block.size()-1).get(0);
+                        temp = cur.phi_block;
                     }
                     int time = min(ir_to_time.get(temp), ir_to_time.get(cur));
                     var_define_timestamp.put(cur.dest.name, time);
@@ -156,11 +159,13 @@ public class ContextAsm {
         }
         if (cur.op_code == IR.OpCode.SET_ARG && cur.dest.value < 4) {
             String name;
-            if (cur.phi_block.size()==0) {
+            if (cur.phi_block==null) {
                 name = "$arg:" + (cur.dest.value) + ":" + "0";
-                ir_to_time.put(new IR(),0);
+                IR temp = new IR();
+                cur.phi_block = temp;
+                ir_to_time.put(temp,0);
             } else {
-                name = "$arg:" + (cur.dest.value) + ":" + (ir_to_time.get(cur.phi_block.get(cur.phi_block.size()-1).get(0)));//不知道对不对
+                name = "$arg:" + (cur.dest.value) + ":" + (ir_to_time.get(cur.phi_block));//不知道对不对
             }
 
             var_define_timestamp.put(name, ir_to_time.get(cur));

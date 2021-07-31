@@ -156,11 +156,13 @@ public class NBinaryExpression extends NExpression {
                 end.add(new IR(IR.OpCode.LABEL,label));
                 CondResult lhs1= this.lhs.eval_cond_runntime(ctx,ir);
                 ir.add(new IR(IR.OpCode.PHI_MOV,dest,new OpName(0),""));
-                ir.get(ir.size()-1).phi_block.add(end);//ir.back().phi_block = end.begin();可能有问题
+//                ir.get(ir.size()-1).phi_block.add(end);//ir.back().phi_block = end.begin();可能有问题
+                ir.get(ir.size()-1).phi_block = end.get(0);
                 ir.add(new IR(lhs1.else_op,label));
                 OpName rhs1=this.rhs.eval_runtime(ctx,ir);
                 ir.add(new IR(IR.OpCode.PHI_MOV,dest,rhs1,""));
-                ir.get(ir.size()-1).phi_block.add(end);
+//                ir.get(ir.size()-1).phi_block.add(end);
+                ir.get(ir.size()-1).phi_block = end.get(0);
                 ir.addAll(end);
                 break;
 
@@ -170,11 +172,13 @@ public class NBinaryExpression extends NExpression {
                 end1.add(new IR(IR.OpCode.LABEL,label1));
                 CondResult lhs2=this.lhs.eval_cond_runntime(ctx,ir);
                 ir.add(new IR(IR.OpCode.PHI_MOV,dest,new OpName(1),""));
-                ir.get(ir.size()-1).phi_block.add(end1);
+//                ir.get(ir.size()-1).phi_block.add(end1);
+                ir.get(ir.size()-1).phi_block = end1.get(0);
                 ir.add(new IR(lhs2.then_op,label1));
                 OpName rhs2=this.rhs.eval_runtime(ctx,ir);
                 ir.add(new IR(IR.OpCode.PHI_MOV,dest,rhs2,""));
-                ir.get(ir.size()-1).phi_block.add(end1);
+//                ir.get(ir.size()-1).phi_block.add(end1);
+                ir.get(ir.size()-1).phi_block = end1.get(0);
                 ir.addAll(end1);
                 break;
 

@@ -80,9 +80,11 @@ public class NIfElseStatement extends NStatement {
                         v.name="%"+ctx.get_id();
                     }
                     ir_then.add(new IR(IR.OpCode.PHI_MOV,new OpName(v.name),new OpName(s.getValue().name),""));
-                    ir_then.get(ir_then.size()-1).phi_block.add(end);
+//                    ir_then.get(ir_then.size()-1).phi_block.add(end);
+                    ir_then.get(ir_then.size()-1).phi_block = end.get(0);
                     ir_else.add(new IR(IR.OpCode.PHI_MOV,new OpName(v.name),new OpName(ctx_else.symbol_table.get(i).get(s.getKey()).name),""));
-                    ir_else.get(ir_else.size()-1).phi_block.add(end);
+//                    ir_else.get(ir_else.size()-1).phi_block.add(end);
+                    ir_else.get(ir_else.size()-1).phi_block = end.get(0);
                 }
             }
         }

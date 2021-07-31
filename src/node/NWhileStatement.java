@@ -161,7 +161,8 @@ public class NWhileStatement extends NStatement {
                     String new_name = "%" + ctx_before.get_id();
                     ir_before.add(new IR(IR.OpCode.PHI_MOV, new OpName(new_name),
                             new OpName(symbol_before.getValue().name), ""));
-                    ir_before.get(ir_before.size() - 1).phi_block.add(ir_cond); //ir_before.back().phi_block = ir_cond.begin();
+//                    ir_before.get(ir_before.size() - 1).phi_block.add(ir_cond); //ir_before.back().phi_block = ir_cond.begin();
+                    ir_before.get(ir_before.size() - 1).phi_block = ir_cond.get(0);
                     ir_continue.add(new IR(IR.OpCode.PHI_MOV, new OpName(new_name),
                             new OpName(symbol_continue.name), ""));
                     ctx_before.symbol_table.get(i).get(symbol_before.getKey()).name
@@ -264,7 +265,8 @@ public class NWhileStatement extends NStatement {
             ir_do.add(new IR(IR.OpCode.PHI_MOV, new OpName(i.getValue()),
                     new OpName(ctx_do.symbol_table.get(i.getKey().getFirst()).
                             get(i.getKey().getSecond()).name), ""));
-            ir_do.get(ir_do.size() - 1).phi_block.add(end);
+//            ir_do.get(ir_do.size() - 1).phi_block.add(end);
+            ir_do.get(ir_do.size() - 1).phi_block = end.get(0);
         }
         for (Map.Entry<Pair, String> i : ctx_do.loop_continue_phi_move.peek().entrySet()) {
             ctx_do.symbol_table.get(i.getKey().getFirst()).get(i.getKey().getSecond()).name =
@@ -292,7 +294,8 @@ public class NWhileStatement extends NStatement {
                 if (!symbol_before.getValue().name.equals(symbol_continue.name)) {
                     ir_continue.add(new IR(IR.OpCode.PHI_MOV, new OpName(symbol_before.getValue().name),
                             new OpName(symbol_continue.name), ""));
-                    ir_continue.get(ir_continue.size() - 1).phi_block.add(ir_cond);
+//                    ir_continue.get(ir_continue.size() - 1).phi_block.add(ir_cond);
+                    ir_continue.get(ir_continue.size() - 1).phi_block = ir_cond.get(0);
                 }
             }
         }
