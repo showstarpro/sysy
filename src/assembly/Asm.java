@@ -161,12 +161,12 @@ public class Asm {
                 out.println(ir.label + ":");
                 if (stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3] > 256) {
                     ctx.load("r12",
-                            new OpName(stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3]),
+                            new OpName(2*(stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3])),
                             out);
                     out.println("    SUB sp, sp, r12");
                 } else {
                     out.println("    SUB sp, sp, #" +
-                            (stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3]));
+                            2*(stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3]));
                 }
                 if (ctx.has_function_call) ctx.store_to_stack("lr", new OpName("$ra"), out, "STR");
 
