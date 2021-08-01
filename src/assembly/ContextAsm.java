@@ -96,10 +96,10 @@ public class ContextAsm {
 
     public void set_var_latest_use_timestamp(IR cur) {
         if (cur.op_code != IR.OpCode.MALLOC_IN_STACK) {
+            F(cur, cur.dest);
             F(cur, cur.op1);
             F(cur, cur.op2);
             F(cur, cur.op3);
-            F(cur, cur.dest);
         }
         if (cur.op_code == IR.OpCode.SET_ARG && cur.dest.value < 4) {
             String name;
