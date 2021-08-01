@@ -58,7 +58,7 @@ public class Asm {
             ctx.set_var_define_timestamp(irs.get(i));
         }
 
-        for (int i = end_index - 1; i != begin_index - 1; i--) {
+        for (int i = end_index - 1; i != begin_index; i--) {
             ctx.set_var_latest_use_timestamp(irs.get(i));
         }
 
@@ -201,7 +201,7 @@ public class Asm {
                         ctx.load("r" + op1, ir.op1, out);
                     }
                     if (dest_in_reg && op1 != dest) {
-                        out.println("   MOV r" + dest + ",r" + op1);
+                        out.println("   MOV r" + dest + ", r" + op1);
                     } else if (!dest_in_reg) {
                         ctx.store_to_stack("r" + op1, ir.dest, out, "STR");
                     }
@@ -212,7 +212,8 @@ public class Asm {
                         ir.op1.type == OpName.Type.Var && ctx.var_in_reg(ir.op1.name);
                 boolean op2_in_reg =
                         ir.op2.type == OpName.Type.Var && ctx.var_in_reg(ir.op2.name);
-                boolean op2_is_imm = ir.op2.type == OpName.Type.Imm && (ir.op2.value >= 0 && ir.op2.value < 256);
+                boolean op2_is_imm = ir.op2.type == OpName.Type.Imm
+                        && (ir.op2.value >= 0 && ir.op2.value < 256);
                 int op1 = op1_in_reg ? ctx.var_to_reg.get(ir.op1.name) : 11;
                 int op2 = op2_in_reg ? ctx.var_to_reg.get(ir.op2.name) : 12;
                 int dest = dest_in_reg ? ctx.var_to_reg.get(ir.dest.name) : 12;

@@ -113,13 +113,14 @@ public class ContextAsm {
             }
 
             var_latest_use_timestamp.put(name, ir_to_time.get(cur));//同上
-            var_latest_use_timestamp_heap.put(ir_to_time.get(cur), name);
+            var_latest_use_timestamp_heap.put(ir_to_time.get(cur.phi_block), name);
         }
         if (cur.op_code == IR.OpCode.IMUL && cur.op1.type == OpName.Type.Var) {
             var_latest_use_timestamp.compute(cur.op1.name, (key, value) -> value + 1);
         }
 
-        if (cur.op_code == IR.OpCode.CALL || cur.op_code == IR.OpCode.IDIV || cur.op_code == IR.OpCode.MOD) {
+        if (cur.op_code == IR.OpCode.CALL || cur.op_code == IR.OpCode.IDIV ||
+                cur.op_code == IR.OpCode.MOD) {
             for (int i = 0; i < 4; i++) {
                 String name = "$arg:" + i + ":" +ir_to_time.get(cur);
                 var_latest_use_timestamp.put(name, ir_to_time.get(cur));
@@ -129,7 +130,8 @@ public class ContextAsm {
     }
 
     public void set_var_define_timestamp(IR cur) {
-        if (cur.op_code != IR.OpCode.MALLOC_IN_STACK && cur.op_code != IR.OpCode.PHI_MOV) {
+        if (cur.op_code != IR.OpCode.MALLOC_IN_STACK &&
+                cur.op_code != IR.OpCode.PHI_MOV) {
             if (cur.dest.type == OpName.Type.Var) {
                 if (!var_latest_use_timestamp.containsKey(cur.dest.name)) {
                     var_define_timestamp.put(cur.dest.name, ir_to_time.get(cur));
@@ -183,7 +185,9 @@ public class ContextAsm {
     public void expire_old_intervals(int cur_time) {
         for (int i = 0; i < reg_count; i++) {
             if (used_reg.get(i))
-                if (!reg_to_var.containsKey(i) || !var_latest_use_timestamp.containsKey(reg_to_var.get(i)) || cur_time >= var_latest_use_timestamp.get(reg_to_var.get(i))) {
+                if (!reg_to_var.containsKey(i) ||
+                        !var_latest_use_timestamp.containsKey(reg_to_var.get(i)) ||
+                        cur_time >= var_latest_use_timestamp.get(reg_to_var.get(i))) {
                     used_reg.set(i, false);
                     log_out.println("# [log]" + cur_time + " expire " + reg_to_var.get(i) + " r" + i);
                     reg_to_var.remove(i);
@@ -253,7 +257,7 @@ public class ContextAsm {
                 return i;
         }
         for (int i = begin; i < reg_count; i++)
-            if (!used_reg.get(i) && savable_reg.get(i)) {
+            if ((!used_reg.get(i)) && savable_reg.get(i)) {
                 return i;
             }
         return -1;
@@ -264,13 +268,13 @@ public class ContextAsm {
         tmp.or(used_reg);
         for (int i = begin; i < reg_count; i++) {
             if (!tmp.get(i)) {
-                used_reg.set(i);
+                used_reg.set(i, true);
                 return i;
             }
         }
         for (int i = begin; i < reg_count; i++)
-            if (!used_reg.get(i) && savable_reg.get(i)) {
-                used_reg.set(i);
+            if ((!used_reg.get(i)) && savable_reg.get(i)) {
+                used_reg.set(i, true);
                 stack_size[1] += 4;
                 savable_reg.set(i, false);
                 return i;
