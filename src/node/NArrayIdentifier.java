@@ -36,6 +36,7 @@ public class NArrayIdentifier extends NIdentifier {
         if (v.is_array) {
             if (this.shape.size() == v.shape.size()) {
                 int index = 0, size = 1;
+                // todo 可能发生错误的地方
                 for (int i = this.shape.size() + 1; i >= 0; i++) {
                     index += this.shape.get(i).eval(ctx) * size;
                     size *= v.shape.get(i);
@@ -51,88 +52,49 @@ public class NArrayIdentifier extends NIdentifier {
     }
 
     //
-//    public OpName eval_runtime(ContextIR ctx, List<IR> ir) throws Exception {
-//        VarInfo v = ctx.find_symbol(this.name.name);
-//        if (v.is_array) {
-//            if (this.shape.size() == v.shape.size()) {
-//
-//                int offset = 1;
-//                for (int i = this.shape.size(); i < v.shape.size(); i++) {
-//                    offset *= v.shape.get(i);
-//                }
-//
-//                OpName index = new OpName("%" + ctx.get_id());
-//                ir.add(new IR(IR.OpCode.MOV, index, new OpName(0), ""));
-//                for (int i = this.shape.size() - 1; i >= 0; i--) {
-//                    OpName tmp = new OpName("%" + ctx.get_id());
-//                    OpName tmp2 = new OpName("%" + ctx.get_id());
-//                    ir.add(new IR(IR.OpCode.IMUL, tmp, new OpName(offset), this.shape.get(i).eval_runtime(ctx, ir), ""));
-//                    ir.add(new IR(IR.OpCode.ADD, tmp2, index, tmp, ""));
-//                    index = tmp2;
-//                    offset *= v.shape.get(i);
-//                }
-//                OpName tmp3 = new OpName("%" + ctx.get_id());
-//                OpName dest = new OpName("%" + ctx.get_id());
-//                ir.add(new IR(IR.OpCode.SAL, tmp3, index, new OpName(2), ""));
-//                ir.add(new IR(IR.OpCode.LOAD, dest, new OpName(v.name), tmp3, ""));
-//                return dest;
-//            } else if (this.shape.size() < v.shape.size()) {
-//                int offset = 1;
-//                for (int i = this.shape.size(); i < v.shape.size(); i++) {
-//                    offset *= v.shape.get(i);
-//                }
-//
-//                OpName index = new OpName("%" + ctx.get_id());
-//                ir.add(new IR(IR.OpCode.MOV, index, new OpName(0), ""));
-//                for (int i = this.shape.size() - 1; i >= 0; i--) {
-//                    OpName tmp = new OpName("%" + ctx.get_id());
-//                    OpName tmp2 = new OpName("%" + ctx.get_id());
-//                    ir.add(new IR(IR.OpCode.IMUL, tmp, new OpName(offset), this.shape.get(i).eval_runtime(ctx, ir), ""));
-//                    ir.add(new IR(IR.OpCode.ADD, tmp2, index, tmp, ""));
-//                    index = tmp2;
-//                    offset *= v.shape.get(i);
-//                }
-//                OpName tmp3 = new OpName("%" + ctx.get_id());
-//                OpName dest = new OpName("%" + ctx.get_id());
-//                ir.add(new IR(IR.OpCode.SAL, tmp3, index, new OpName(2), ""));
-//                ir.add(new IR(IR.OpCode.ADD, dest, tmp3, new OpName(v.name), ""));
-////                ir.add(new IR(IR.OpCode.LOAD, dest, new OpName(v.name), tmp3, ""));
-//                return dest;
-//            } else {
-//                throw new Exception(this.name.name + "'s shape unmatch.");
-//            }
-//        } else {
-//            throw new Exception(this.name.name + " is not a array.");
-//        }
-//    }
     public OpName eval_runtime(ContextIR ctx, List<IR> ir) throws Exception {
         VarInfo v = ctx.find_symbol(this.name.name);
         if (v.is_array) {
             if (this.shape.size() == v.shape.size()) {
-                OpName dest = new OpName("%" + ctx.get_id());
+
+                int offset = 1;
+
                 OpName index = new OpName("%" + ctx.get_id());
-                OpName size = new OpName("%" + ctx.get_id());
-                ir.add(new IR(IR.OpCode.SAL, index, this.shape.get(this.shape.size() - 1).eval_runtime(ctx, ir), new OpName(2), ""));
-
-                if (this.shape.size() != 1) {
-                    OpName tmp = new OpName("%" + ctx.get_id());
-                    ir.add(new IR(IR.OpCode.MOV, size, new OpName(4 * v.shape.get(this.shape.size() - 1)), ""));
-                }
-
-                for (int i = this.shape.size() - 2; i >= 0; i--) {
+                ir.add(new IR(IR.OpCode.MOV, index, new OpName(0), ""));
+                for (int i = this.shape.size() - 1; i >= 0; i--) {
                     OpName tmp = new OpName("%" + ctx.get_id());
                     OpName tmp2 = new OpName("%" + ctx.get_id());
-                    ir.add(new IR(IR.OpCode.IMUL, tmp, size, this.shape.get(i).eval_runtime(ctx, ir), ""));
+                    ir.add(new IR(IR.OpCode.IMUL, tmp, new OpName(offset), this.shape.get(i).eval_runtime(ctx, ir), ""));
                     ir.add(new IR(IR.OpCode.ADD, tmp2, index, tmp, ""));
                     index = tmp2;
-                    if (i != 0) {
-                        OpName tmp3 = new OpName("%" + ctx.get_id());
-                        ir.add(new IR(IR.OpCode.IMUL, tmp3, size, new OpName(v.shape.get(i)), ""));
-                        size = tmp3;
-                    }
+                    offset *= v.shape.get(i);
+                }
+                OpName tmp3 = new OpName("%" + ctx.get_id());
+                OpName dest = new OpName("%" + ctx.get_id());
+                ir.add(new IR(IR.OpCode.SAL, tmp3, index, new OpName(2), ""));
+                ir.add(new IR(IR.OpCode.LOAD, dest, new OpName(v.name), tmp3, ""));
+                return dest;
+            } else if (this.shape.size() < v.shape.size()) {
+                int offset = 1;
+                for (int i = this.shape.size(); i < v.shape.size(); i++) {
+                    offset *= v.shape.get(i);
                 }
 
-                ir.add(new IR(IR.OpCode.LOAD, dest, new OpName(v.name), index, ""));
+                OpName index = new OpName("%" + ctx.get_id());
+                ir.add(new IR(IR.OpCode.MOV, index, new OpName(0), ""));
+                for (int i = this.shape.size() - 1; i >= 0; i--) {
+                    OpName tmp = new OpName("%" + ctx.get_id());
+                    OpName tmp2 = new OpName("%" + ctx.get_id());
+                    ir.add(new IR(IR.OpCode.IMUL, tmp, new OpName(offset), this.shape.get(i).eval_runtime(ctx, ir), ""));
+                    ir.add(new IR(IR.OpCode.ADD, tmp2, index, tmp, ""));
+                    index = tmp2;
+                    offset *= v.shape.get(i);
+                }
+                OpName tmp3 = new OpName("%" + ctx.get_id());
+                OpName dest = new OpName("%" + ctx.get_id());
+                ir.add(new IR(IR.OpCode.SAL, tmp3, index, new OpName(2), ""));
+                ir.add(new IR(IR.OpCode.ADD, dest, tmp3, new OpName(v.name), ""));
+//                ir.add(new IR(IR.OpCode.LOAD, dest, new OpName(v.name), tmp3, ""));
                 return dest;
             } else {
                 throw new Exception(this.name.name + "'s shape unmatch.");
