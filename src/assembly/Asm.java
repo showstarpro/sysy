@@ -506,13 +506,26 @@ public class Asm {
                 } else {
                     boolean op2_in_reg =
                             ir.op2.type == OpName.Type.Var && ctx.var_in_reg(ir.op2.name);
-                    int op1 = 11;
-                    int op2 = op2_in_reg ? ctx.var_to_reg.get(ir.op2.name) : 12;
-                    if (!op2_in_reg) ctx.load("r" + op2, ir.op2, out);
+//                    int op1 = 11;
+//                    int op2 = op2_in_reg ? ctx.var_to_reg.get(ir.op2.name) : 12;
+//                    if (!op2_in_reg) ctx.load("r" + op2, ir.op2, out);
+                    int op1 = 12;
+                    int op2 = op2_in_reg ? ctx.var_to_reg.get(ir.op2.name) : 11;
+                    boolean offset_is_small =
+                            ir.op2.type == OpName.Type.Imm && ir.op2.value >= 0 && ir.op2.value < 256;
+                    if (!op2_in_reg && !offset_is_small)
+                        ctx.load("r" + op2, ir.op2, out);
                     ctx.load("r" + op1, ir.op1, out);
-                    out.println("    ADD r12, r" + op1 + ", r" + op2);
+//                    out.println("    ADD r12, r" + op1 + ", r" + op2);
+                    if(!offset_is_small)
+                        out.println("   ADD r12, r"+op1+", r"+op2);
                     if (!op3_in_reg) ctx.load("r" + op3, ir.op3, out);
-                    out.println("    STR r" + op3 + ", [r12]");
+//                    out.println("    STR r" + op3 + ", [r12]");
+                    out.println("    STR r" + op3 + ", ["
+                            + (offset_is_small
+                            ? "r" + op1 + ",#" +ir.op2.value
+                            : "r12")
+                            +"]" );
                 }
             } else if (ir.op_code == IR.OpCode.LOAD) {
                 boolean dest_in_reg = ctx.var_in_reg(ir.dest.name);
@@ -529,13 +542,27 @@ public class Asm {
                 } else {
                     boolean op2_in_reg =
                             ir.op2.type == OpName.Type.Var && ctx.var_in_reg(ir.op2.name);
-                    int op1 = 11;
-                    int op2 = op2_in_reg ? ctx.var_to_reg.get(ir.op2.name) : 12;
+//                    int op1 = 11;
+//                    int op2 = op2_in_reg ? ctx.var_to_reg.get(ir.op2.name) : 12;
+                    int op1 = 12;
+                    int op2 = op2_in_reg ? ctx.var_to_reg.get(ir.op2.name) : 11;
+                    boolean offset_is_small =
+                            ir.op2.type == OpName.Type.Imm && ir.op2.value >= 0 && ir.op2.value < 256;
 
-                    if (!op2_in_reg) ctx.load("r" + op2, ir.op2, out);
+//                    if (!op2_in_reg) ctx.load("r" + op2, ir.op2, out);
+                    if (!op2_in_reg && !offset_is_small)
+                        ctx.load("r" + op2, ir.op2, out);
+
                     ctx.load("r" + op1, ir.op1, out);
-                    out.println("    ADD r12, r" + op1 + ", r" + op2);
-                    out.println("    LDR r" + dest + ", [r12]");
+//                    out.println("    ADD r12, r" + op1 + ", r" + op2);
+//                    out.println("    LDR r" + dest + ", [r12]");
+                    if(!offset_is_small)
+                        out.println("    ADD r12, r" + op1 + ", r" + op2);
+                    out.println("    LDR r" + dest + ", ["
+                            + (offset_is_small
+                            ? "r" + op1 + ",#" + ir.op2.value
+                            : "r12")
+                            + "]");
                     if (!dest_in_reg) {
                         ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
                     }
