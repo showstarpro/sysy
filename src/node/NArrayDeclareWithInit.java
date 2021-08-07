@@ -54,7 +54,7 @@ public class NArrayDeclareWithInit extends NDeclare {
                     new VarInfo("%&"+ctx.get_id(),true,shape));
             ir.add(new IR(IR.OpCode.MALLOC_IN_STACK,
             new OpName(ctx.find_symbol(this.name.name.name).name),
-            new OpName(size*4),""));
+            new OpName(size*4 * 2),""));
             ir.add(new IR(IR.OpCode.SET_ARG, new OpName(0),
                     new OpName(ctx.find_symbol(this.name.name.name).name),
                     ""));
