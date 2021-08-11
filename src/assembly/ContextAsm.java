@@ -133,7 +133,7 @@ public class ContextAsm {
         if (cur.op_code != IR.OpCode.MALLOC_IN_STACK &&
                 cur.op_code != IR.OpCode.PHI_MOV) {
             if (cur.dest.type == OpName.Type.Var) {
-                if (!var_latest_use_timestamp.containsKey(cur.dest.name)) {
+                if (!var_define_timestamp.containsKey(cur.dest.name)) {
                     var_define_timestamp.put(cur.dest.name, ir_to_time.get(cur));
                     var_define_timestamp_heap.put(ir_to_time.get(cur), cur.dest.name);
                 }
