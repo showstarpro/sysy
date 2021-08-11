@@ -14,6 +14,10 @@ public class NIdentifier extends NExpression {
 
     public NIdentifier(String name) {
         this.name = name;
+        if(name.equals("starttime"))
+            this.name = "_sysy_starttime";
+        if(name.equals("stoptime"))
+            this.name = "_sysy_stoptime";
     }
 
     public void print(int indentation, boolean end,PrintStream out) {
