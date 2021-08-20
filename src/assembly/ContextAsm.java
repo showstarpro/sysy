@@ -13,7 +13,7 @@ public class ContextAsm {
     private int time = 0;
     public static final int reg_count = 11;
 
-    PrintStream log_out;
+    List<String> log_out;
 
     public List<IR> ir;
     public int[] stack_size = {6 * 4, 4, 0, 0};
@@ -47,11 +47,16 @@ public class ContextAsm {
         reg_to_var = new HashMap<>();
     }
 
-    public ContextAsm(List<IR> ir, ListIterator<IR> function_begin_it, PrintStream log_out) {
+    public ContextAsm(List<IR> ir, ListIterator<IR> function_begin_it, List<String> log_out) {
         this.ir = ir;
         this.function_begin_it = ir.listIterator(function_begin_it.nextIndex());
         this.log_out = log_out;
 
+    }
+
+    public ContextAsm(List<IR> ir, ListIterator<IR> function_begin_it) {
+        this.ir = ir;
+        this.function_begin_it = ir.listIterator(function_begin_it.nextIndex());
     }
 
 
@@ -113,6 +118,7 @@ public class ContextAsm {
             }
 
             var_latest_use_timestamp.put(name, ir_to_time.get(cur));//同上
+            if(ir_to_time.get(cur.phi_block)!=null)
             var_latest_use_timestamp_heap.put(ir_to_time.get(cur.phi_block), name);
         }
         if (cur.op_code == IR.OpCode.IMUL && cur.op1.type == OpName.Type.Var) {
@@ -189,7 +195,7 @@ public class ContextAsm {
                         !var_latest_use_timestamp.containsKey(reg_to_var.get(i)) ||
                         cur_time >= var_latest_use_timestamp.get(reg_to_var.get(i))) {
                     used_reg.set(i, false);
-                    log_out.println("# [log]" + cur_time + " expire " + reg_to_var.get(i) + " r" + i);
+                    log_out.add("# [log]" + cur_time + " expire " + reg_to_var.get(i) + " r" + i+"\n");
                     reg_to_var.remove(i);
                 }
         }
@@ -320,87 +326,87 @@ public class ContextAsm {
         return reg_id;
     }
 
-    public void load_imm(String reg, int value, PrintStream out) {
+    public void load_imm(String reg, int value, List<String> out) {
         if (value >= 0 && value < 65536)
-            out.println("    MOV " + reg + ", #" + value);
+            out.add("    MOV " + reg + ", #" + value+"\n");
         else
-            out.println("    MOV32 " + reg + ",  " + value);
+            out.add("    MOV32 " + reg + ",  " + value+"\n");
     }
 
-    public void load(String reg, OpName op, PrintStream out) throws Exception {
+    public void load(String reg, OpName op, List<String> out) throws Exception {
         if (op.type == OpName.Type.Imm) {
             load_imm(reg, op.value, out);
         } else if (op.type == OpName.Type.Var) {
             if (var_to_reg.containsKey(op.name)) {
                 if (Integer.parseUnsignedInt(reg.substring(1)) != var_to_reg.get(op.name))
-                    out.println("    MOV " + reg + ", r" + var_to_reg.get(op.name));
+                    out.add("    MOV " + reg + ", r" + var_to_reg.get(op.name)+"\n");
             } else {
                 if (op.name.charAt(0) == '%') {
                     if (op.name.charAt(1) == '&') {
                         int offset = resolve_stack_offset(op.name);
                         if (offset >= 0 && offset < 256)
-                            out.println("    ADD " + reg + ", sp, #" + offset);
+                            out.add("    ADD " + reg + ", sp, #" + offset+"\n");
                         else {
                             load_imm(reg, resolve_stack_offset(op.name), out);
-                            out.println("    ADD " + reg + ", sp, " + reg);
+                            out.add("    ADD " + reg + ", sp, " + reg+"\n");
                         }
                     } else {
                         if (var_in_reg(op.name)) {
-                            out.println("    MOV " + reg + ", r" + var_to_reg.get(op.name));
+                            out.add("    MOV " + reg + ", r" + var_to_reg.get(op.name)+"\n");
                         } else {
                             int offset = resolve_stack_offset(op.name);
                             if (offset > -4096 && offset < 4096) {
-                                out.println("    LDR " + reg + ", [sp,#" + offset + "]");
+                                out.add("    LDR " + reg + ", [sp,#" + offset + "]"+"\n");
                             } else {
-                                out.println("    MOV32 r11, " + offset);
-                                out.println("    ADD r11, sp, r11");
-                                out.println("    LDR " + reg + ", [r11,#0]");
+                                out.add("    MOV32 r11, " + offset+"\n");
+                                out.add("    ADD r11, sp, r11"+"\n");
+                                out.add("    LDR " + reg + ", [r11,#0]"+"\n");
                             }
                         }
                     }
                 } else if (op.name.charAt(0) == '@') {
                     if (op.name.charAt(1) != '&') {
-                        out.println("    MOV32 " + reg + "," + rename(op.name));
-                        out.println("    LDR " + reg + ", [" + reg + ", #0]");
+                        out.add("    MOV32 " + reg + "," + rename(op.name)+"\n");
+                        out.add("    LDR " + reg + ", [" + reg + ", #0]"+"\n");
                     } else
-                        out.println("    MOV32 " + reg + ", " + rename(op.name));
+                        out.add("    MOV32 " + reg + ", " + rename(op.name)+"\n");
                 } else if (op.name.charAt(0) == '$') {
                     int offset = resolve_stack_offset(op.name);
                     if (offset > -4096 && offset < 4096) {
-                        out.println("    LDR " + reg + ", [sp, #" + offset + "]");
+                        out.add("    LDR " + reg + ", [sp, #" + offset + "]"+"\n");
                     } else {
-                        out.println("    MOV32 r11, " + offset);
-                        out.println("    ADD r11, sp, r11");
-                        out.println("    LDR " + reg + ", [r11,#0]");
+                        out.add("    MOV32 r11, " + offset+"\n");
+                        out.add("    ADD r11, sp, r11"+"\n");
+                        out.add("    LDR " + reg + ", [r11,#0]"+"\n");
                     }
                 }
             }
         }
     }
 
-    public void store_to_stack_offset(String reg, int offset, PrintStream out, String op) throws Exception {
+    public void store_to_stack_offset(String reg, int offset, List<String> out, String op) throws Exception {
         if (!(offset > -4096 && offset < 4096)) {
             String tmp_reg = reg.equals("r11") ? "r12" : "r11";
             load_imm(tmp_reg, offset, out);
-            out.println("    ADD " + tmp_reg + ", sp, " + tmp_reg);
-            out.println("    " + op + " " + reg + ", [" + tmp_reg + ", #0]");
+            out.add("    ADD " + tmp_reg + ", sp, " + tmp_reg+"\n");
+            out.add("    " + op + " " + reg + ", [" + tmp_reg + ", #0]"+"\n");
         } else {
-            out.println("    " + op + " " + reg + ", [sp, #" + offset + "]");
+            out.add("    " + op + " " + reg + ", [sp, #" + offset + "]"+"\n");
         }
     }
 
-    public void load_from_stack_offset(String reg, int offset, PrintStream out, String op) throws Exception {
+    public void load_from_stack_offset(String reg, int offset, List<String> out, String op) throws Exception {
         if (!(offset > -4096 && offset < 4096)) {
             String tmp_reg = reg.equals("r11") ? "r12" : "r11";
             load_imm(tmp_reg, offset, out);
-            out.println("    ADD " + tmp_reg + ", sp, " + tmp_reg);
-            out.println("    " + op + " " + reg + ", [" + tmp_reg + ", #0]");
+            out.add("    ADD " + tmp_reg + ", sp, " + tmp_reg+"\n");
+            out.add("    " + op + " " + reg + ", [" + tmp_reg + ", #0]"+"\n");
         } else {
-            out.println("    " + op + " " + reg + ", [sp,#" + offset + "]");
+            out.add("    " + op + " " + reg + ", [sp,#" + offset + "]"+"\n");
         }
     }
 
-    public void store_to_stack(String reg, OpName op, PrintStream out, String op_code) throws Exception {
+    public void store_to_stack(String reg, OpName op,List<String> out, String op_code) throws Exception {
         if (op.type != OpName.Type.Var)
             throw new Exception("WTF");//??
         if (op.name.charAt(1) == '&')
@@ -408,8 +414,8 @@ public class ContextAsm {
         if (op.name.charAt(0) == '%')
             store_to_stack_offset(reg, resolve_stack_offset(op.name), out, op_code);
         else if (op.name.charAt(0) == '@') {
-            out.println("    MOV32 r11, " + rename(op.name));
-            out.println("    " + op_code + " " + reg + ", [r11,#0]");
+            out.add("    MOV32 r11, " + rename(op.name)+"\n");
+            out.add("    " + op_code + " " + reg + ", [r11,#0]"+"\n");
         } else if (op.name.charAt(0) == '$') {
             int offset = resolve_stack_offset(op.name);
             store_to_stack_offset(reg, offset, out, op_code);

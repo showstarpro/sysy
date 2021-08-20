@@ -1,9 +1,6 @@
 package node;
 
-import ir.ContextIR;
-import ir.IR;
-import ir.OpName;
-import ir.VarInfo;
+import ir.*;
 import util.Pair;
 
 import java.io.PrintStream;
@@ -301,6 +298,8 @@ public class NWhileStatement extends NStatement {
         }
         ir_continue.add(new IR(IR.OpCode.JMP,
                 "LOOP_" + ctx.loop_label.peek() + "_BEGIN"));
+
+            OptIR.optimize_loop_ir(ir_before,ir_cond,ir_jmp,ir_do,ir_continue);
 
         // 为 continue 块增加假读以延长其生命周期
         // 不是很懂这个意思

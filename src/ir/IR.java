@@ -1,13 +1,12 @@
 package ir;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
-public class IR {
-   public enum OpCode {
+public class IR implements Comparable,Cloneable {
+
+
+    public enum OpCode {
         MALLOC_IN_STACK,  // dest = offset(new StackArray(size op1))
         MOV,              // dest = op1
         ADD,              // dest = op1 + op2
@@ -63,6 +62,13 @@ public class IR {
     {
 
     }
+
+    public IR(OpCode op_code, OpName dest, OpName op1) {
+        this.dest = dest;
+        this.op1 = op1;
+        this.op_code = op_code;
+    }
+
     public IR(OpCode op_code, OpName dest, OpName op1, OpName op2, OpName op3,
               String label) {
         this.dest = dest;
@@ -111,166 +117,166 @@ public class IR {
 
     }
 
-    public void print(PrintStream out, boolean verbose){
+    public void print(List<String> out, boolean verbose){
         switch (this.op_code){
             case MALLOC_IN_STACK:
-                out.print("MALLOC_IN_STACK");
+                out.add("MALLOC_IN_STACK");
                 printSpace(16-"MALLOC_IN_STACK".length(),out);
                 break;
             case MOV:
-                out.print("MOV");
+                out.add("MOV");
                 printSpace(16-"MOV".length(),out);
                 break;
             case ADD:
-                out.print("ADD");
+                out.add("ADD");
                 printSpace(16-"ADD".length(),out);
                 break;
             case SUB:
-                out.print("SUB");
+                out.add("SUB");
                 printSpace(16-"SUB".length(),out);
                 break;
             case IMUL:
-                out.print("IMUL");
+                out.add("IMUL");
                 printSpace(16-"IMUL".length(),out);
                 break;
             case IDIV:
-                out.print("IDIV");
+                out.add("IDIV");
                 printSpace(16-"IDIV".length(),out);
                 break;
             case MOD:
-                out.print("MOD");
+                out.add("MOD");
                 printSpace(16-"MOD".length(),out);
                 break;
             case SET_ARG:
-                out.print("SET_ARG");
+                out.add("SET_ARG");
                 printSpace(16-"SET_ARG".length(),out);
                 break;
             case CALL:
-                out.print("CALL");
+                out.add("CALL");
                 printSpace(16-"CALL".length(),out);
                 break;
             case CMP:
-                out.print("CMP");
+                out.add("CMP");
                 printSpace(16-"CMP".length(),out);
                 break;
             case JMP:
-                out.print("JMP");
+                out.add("JMP");
                 printSpace(16-"JMP".length(),out);
                 break;
             case JEQ:
-                out.print("JEQ");
+                out.add("JEQ");
                 printSpace(16-"JEQ".length(),out);
                 break;
             case JNE:
-                out.print("JNE");
+                out.add("JNE");
                 printSpace(16-"JNE".length(),out);
                 break;
             case JLE:
-                out.print("JLE");
+                out.add("JLE");
                 printSpace(16-"JLE".length(),out);
                 break;
             case JLT:
-                out.print("JLT");
+                out.add("JLT");
                 printSpace(16-"JLT".length(),out);
                 break;
             case JGE:
-                out.print("JGE");
+                out.add("JGE");
                 printSpace(16-"JGE".length(),out);
                 break;
             case JGT:
-                out.print("JGT");
+                out.add("JGT");
                 printSpace(16-"JGT".length(),out);
                 break;
             case MOVEQ:
-                out.print("MOVEQ");
+                out.add("MOVEQ");
                 printSpace(16-"MOVEQ".length(),out);
                 break;
             case MOVNE:
-                out.print("MOVNE");
+                out.add("MOVNE");
                 printSpace(16-"MOVNE".length(),out);
                 break;
             case MOVLE:
-                out.print("MOVLE");
+                out.add("MOVLE");
                 printSpace(16-"MOVLE".length(),out);
                 break;
             case MOVLT:
-                out.print("MOVLT");
+                out.add("MOVLT");
                 printSpace(16-"MOVLT".length(),out);
                 break;
             case MOVGE:
-                out.print("MOVGE");
+                out.add("MOVGE");
                 printSpace(16-"MOVGE".length(),out);
                 break;
             case MOVGT:
-                out.print("MOVGT");
+                out.add("MOVGT");
                 printSpace(16-"MOVGT".length(),out);
                 break;
             case AND:
-                out.print("AND");
+                out.add("AND");
                 printSpace(16-"AND".length(),out);
                 break;
             case OR:
-                out.print("OR");
+                out.add("OR");
                 printSpace(16-"OR".length(),out);
                 break;
             case SAL:
-                out.print("SAL");
+                out.add("SAL");
                 printSpace(16-"SAL".length(),out);
                 break;
             case SAR:
-                out.print("SAR");
+                out.add("SAR");
                 printSpace(16-"SAR".length(),out);
                 break;
             case STORE:
-                out.print("STORE");
+                out.add("STORE");
                 printSpace(16-"STORE".length(),out);
                 break;
             case LOAD:
-                out.print("LOAD");
+                out.add("LOAD");
                 printSpace(16-"LOAD".length(),out);
                 break;
             case RET:
-                out.print("RET");
+                out.add("RET");
                 printSpace(16-"RET".length(),out);
                 break;
             case LABEL:
-                out.print("LABEL");
+                out.add("LABEL");
                 printSpace(16-"LABEL".length(),out);
                 break;
             case DATA_BEGIN:
-                out.print("DATA_BEGIN");
+                out.add("DATA_BEGIN");
                 printSpace(16-"DATA_BEGIN".length(),out);
                 break;
             case DATA_SPACE:
-                out.print("DATA_SPACE");
+                out.add("DATA_SPACE");
                 printSpace(16-"DATA_SPACE".length(),out);
                 break;
             case DATA_WORD:
-                out.print("DATA_WORD");
+                out.add("DATA_WORD");
                 printSpace(16-"DATA_WORD".length(),out);
                 break;
             case DATA_END:
-                out.print("DATA_END");
+                out.add("DATA_END");
                 printSpace(16-"DATA_END".length(),out);
                 break;
             case FUNCTION_BEGIN:
-                out.print("FUNCTION_BEGIN");
+                out.add("FUNCTION_BEGIN");
                 printSpace(16-"FUNCTION_BEGIN".length(),out);
                 break;
             case FUNCTION_END:
-                out.print("FUNCTION_END");
+                out.add("FUNCTION_END");
                 printSpace(16-"FUNCTION_END".length(),out);
                 break;
             case PHI_MOV:
-                out.print("PHI_MOV");
+                out.add("PHI_MOV");
                 printSpace(16-"PHI_MOV".length(),out);
                 break;
             case NOOP:
-                out.print("NOOP");
+                out.add("NOOP");
                 printSpace(16-"NOOP".length(),out);
                 break;
             case INFO:
-                out.print("INFO");
+                out.add("INFO");
                 printSpace(16-"INFO".length(),out);
                 break;
         }
@@ -278,27 +284,75 @@ public class IR {
         F(this.op1,out);
         F(this.op2,out);
         F(this.op3,out);
-        out.println(this.label);
+        out.add(this.label+"\n");
 
     }
 
-    private static void printSpace(int n, PrintStream out){
+    private static void printSpace(int n, List<String> out){
         for(int i = 0;i<n;i++){
-            out.print(" ");
+            out.add(" ");
         }
     }
 
-    private static void F(OpName op, PrintStream out){
+    private static void F(OpName op, List<String> out){
         if(op.type == OpName.Type.Imm){
-            out.print(op.value+"\t");
+            out.add(op.value+"\t");
         }
         else if(op.type == OpName.Type.Var){
-            out.print(op.name+"\t");
+            out.add(op.name+"\t");
         }
         else if(op.type == OpName.Type.Null){
-            out.print("\t");
+            out.add("\t");
         }
     }
+
+
+
+    @Override
+    public int compareTo(Object o) {
+        IR ir = (IR) o;
+        if(!this.op_code.equals(ir.op_code))
+            return this.op_code.compareTo(ir.op_code);
+        return 0;
+    }
+
+    public IR clone(){
+        IR temp=new IR();
+        if(this.op_code!=null)
+            temp.op_code=this.op_code;
+        else
+            temp.op_code=null;
+        if(this.label!=null)
+            temp.label= this.label;
+        else
+            temp.label=null;
+        if(this.op1!=null)
+            temp.op1=this.op1.clone();
+        else
+            temp.op1=null;
+        if(this.op2!=null)
+            temp.op2=this.op2.clone();
+        else
+            temp.op2=null;
+        if(this.op3!=null)
+            temp.op3=this.op3.clone();
+        else
+            temp.op3=null;
+        if(this.dest!=null)
+            temp.dest=this.dest.clone();
+        else
+            temp.dest=null;
+        if(this.phi_block!=null)
+            temp.phi_block=this.phi_block.clone();
+        else
+            temp.phi_block=null;
+        return temp;
+    }
+
+    public boolean reverse(){
+        return (this.op1.is_global_var() || this.op2.is_global_var() || this.op3.is_global_var());
+    }
+
 }
 
 

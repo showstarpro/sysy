@@ -13,24 +13,24 @@ public class Asm {
         non_volatile_reg.set(4, 11);
     }
 
-    public static void generate_asm(List<IR> irs, PrintStream out) throws Exception {
-        out.println("    .macro mov32, reg, val\n" +
+    public static void generate_asm(List<IR> irs, List<String> out) throws Exception {
+        out.add("    .macro mov32, reg, val\n" +
                 "        movw \\reg, #:lower16:\\val\n" +
                 "        movt \\reg, #:upper16:\\val\n" +
-                "    .endm");
+                "    .endm"+"\n");
         ListIterator<IR> function_begin_it = irs.listIterator();
         ListIterator<IR> outter_it = irs.listIterator();
         while (outter_it.hasNext()) {
             IR ir = outter_it.next();
             outter_it.previous();   // 保持
             if (ir.op_code == IR.OpCode.DATA_BEGIN) {
-                out.println(".data");
-                out.println(".global " + ContextAsm.rename(ir.label));
-                out.println(ContextAsm.rename(ir.label) + ":");
+                out.add(".data"+"\n");
+                out.add(".global " + ContextAsm.rename(ir.label)+"\n");
+                out.add(ContextAsm.rename(ir.label) + ":"+"\n");
             } else if (ir.op_code == IR.OpCode.DATA_WORD) {
-                out.println(".word " + ir.dest.value);
+                out.add(".word " + ir.dest.value+"\n");
             } else if (ir.op_code == IR.OpCode.DATA_SPACE) {
-                out.println(".space " + ir.dest.value);
+                out.add(".space " + ir.dest.value+"\n");
             } else if (ir.op_code == IR.OpCode.FUNCTION_BEGIN) {
                 function_begin_it = irs.listIterator(outter_it.nextIndex());
             } else if (ir.op_code == IR.OpCode.FUNCTION_END) {
@@ -40,7 +40,7 @@ public class Asm {
         }
     }
 
-    public static void generate_function_asm(List<IR> irs, PrintStream out,
+    public static void generate_function_asm(List<IR> irs, List<String> out,
                                              ListIterator<IR> begin,
                                              ListIterator<IR> end) throws Exception {
         int begin_index = begin.nextIndex();
@@ -73,7 +73,7 @@ public class Asm {
         ctx.stack_size[0] = ctx.has_function_call ? 4 : 0;
 
         for (int i = begin_index; i != end_index; i++) {
-            out.print("# " + ctx.ir_to_time.get(irs.get(i)) + " ");
+            out.add("# " + ctx.ir_to_time.get(irs.get(i)) + " ");
             irs.get(i).print(out, false);
         }
 
@@ -152,23 +152,22 @@ public class Asm {
         for (int i = begin_index; i != end_index; i++) {
             IR ir = irs.get(i);
             int[] stack_size = ctx.stack_size;
-            out.print("#");
+            out.add("#");
             ir.print(out, false);
 
             if (ir.op_code == IR.OpCode.FUNCTION_BEGIN) {
-                out.println(".text");
-                out.println(".global " + ir.label);
-                out.println(".type " + ir.label + ", %function");
-                out.println(ir.label + ":");
+                out.add(".text"+"\n");
+                out.add(".global " + ir.label+"\n");
+                out.add(".type " + ir.label + ", %function"+"\n");
+                out.add(ir.label + ":"+"\n");
                 if (stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3] > 256) {
-                    ctx.load("r12",
-                            new OpName(stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3]),
-                            out);
-                    out.println("    SUB sp, sp, r12");
+                    ctx.load("r12", new OpName(stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3]), out);
+                    out.add("    SUB sp, sp, r12"+"\n");
                 } else {
-                    out.println("    SUB sp, sp, #" +
-                            (stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3]));
+                    out.add("    SUB sp, sp, #" +
+                            (stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3])+"\n");
                 }
+
                 if (ctx.has_function_call) ctx.store_to_stack("lr", new OpName("$ra"), out, "STR");
 
 
@@ -202,7 +201,7 @@ public class Asm {
                         ctx.load("r" + op1, ir.op1, out);
                     }
                     if (dest_in_reg && op1 != dest) {
-                        out.println("   MOV r" + dest + ", r" + op1);
+                        out.add("   MOV r" + dest + ", r" + op1+"\n");
                     } else if (!dest_in_reg) {
                         ctx.store_to_stack("r" + op1, ir.dest, out, "STR");
                     }
@@ -225,11 +224,16 @@ public class Asm {
                 if (!op1_in_reg) {
                     ctx.load("r" + op1, ir.op1, out);
                 }
-                out.print("    " + "ADD" + " r" + dest + ", r" + op1 + ", ");
-                if (op2_is_imm) {
-                    out.println("#" + ir.op2.value);
-                } else {
-                    out.println("r" + op2);
+                if(ir.op2.value==0 &&op2_is_imm) {
+                    out.add("    " + "MOV" + " r" + dest + ", r" + op1 +"\n");
+                }
+                else{
+                    out.add("    " + "ADD" + " r" + dest + ", r" + op1 + ", ");
+                    if (op2_is_imm) {
+                        out.add("#" + ir.op2.value + "\n");
+                    } else {
+                        out.add("r" + op2 + "\n");
+                    }
                 }
                 if (!dest_in_reg) {
                     ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
@@ -251,11 +255,11 @@ public class Asm {
                 if (!op1_in_reg) {
                     ctx.load("r" + op1, ir.op1, out);
                 }
-                out.print("     " + "SUB" + " r" + dest + ", r" + op1 + ", ");
+                out.add("     " + "SUB" + " r" + dest + ", r" + op1 + ", ");
                 if (op2_is_imm) {
-                    out.println("#" + ir.op2.value);
+                    out.add("#" + ir.op2.value+"\n");
                 } else {
-                    out.println("r" + op2);
+                    out.add("r" + op2+"\n");
                 }
                 if (!dest_in_reg) {
                     ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
@@ -276,10 +280,10 @@ public class Asm {
                     ctx.load("r" + op1, ir.op1, out);
                 }
                 if (dest == op1) {
-                    out.println("    MUL r12, r" + op1 + ", r" + op2);
-                    out.println("    MOV r" + dest + ", r12");
+                    out.add("    MUL r12, r" + op1 + ", r" + op2+"\n");
+                    out.add("    MOV r" + dest + ", r12"+"\n");
                 } else {
-                    out.println("    MUL r" + dest + ", r" + op1 + ", r" + op2);
+                    out.add("    MUL r" + dest + ", r" + op1 + ", r" + op2+"\n");
                 }
                 if (!dest_in_reg) {
                     ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
@@ -295,7 +299,7 @@ public class Asm {
                 if (!op1_in_reg) {
                     ctx.load("r" + op1, ir.op1, out);
                 }
-                out.println("   " + "LSL" + " r" + dest + ", r" + op1 + ", #" + ir.op2.value);
+                out.add("   " + "LSL" + " r" + dest + ", r" + op1 + ", #" + ir.op2.value+"\n");
                 if (!dest_in_reg) {
                     ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
                 }
@@ -309,7 +313,7 @@ public class Asm {
                 if (!op1_in_reg) {
                     ctx.load("r" + op1, ir.op1, out);
                 }
-                out.println("   " + "ASR" + " r" + dest + ", r" + op1 + ", #" + ir.op2.value);
+                out.add("   " + "ASR" + " r" + dest + ", r" + op1 + ", #" + ir.op2.value+"\n");
                 if (!dest_in_reg) {
                     ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
                 }
@@ -319,9 +323,9 @@ public class Asm {
                 } else {
                     ctx.load("r0", ir.op1, out);
                     ctx.load("r1", ir.op2, out);
-                    out.println("    BL __aeabi_idiv");
+                    out.add("    BL __aeabi_idiv"+"\n");
                     if (ctx.var_in_reg(ir.dest.name)) {
-                        out.println("   MOV r" + ctx.var_to_reg.get(ir.dest.name) + ", r0");
+                        out.add("   MOV r" + ctx.var_to_reg.get(ir.dest.name) + ", r0"+"\n");
                     } else {
                         ctx.store_to_stack("r0", ir.dest, out, "STR");
                     }
@@ -329,17 +333,19 @@ public class Asm {
             } else if (ir.op_code == IR.OpCode.MOD) {
                 ctx.load("r0", ir.op1, out);
                 ctx.load("r1", ir.op2, out);
-                out.println("    BL __aeabi_idivmod");
+                out.add("    BL __aeabi_idivmod"+"\n");
                 if (ctx.var_in_reg(ir.dest.name)) {
-                    out.println("    MOV r" + ctx.var_to_reg.get(ir.dest.name) + ", r1");
+                    out.add("    MOV r" + ctx.var_to_reg.get(ir.dest.name) + ", r1"+"\n");
                 } else {
                     ctx.store_to_stack("r1", ir.dest, out, "STR");
                 }
             } else if (ir.op_code == IR.OpCode.CALL) {
-                out.println("   BL " + ir.label);
+                if(ir.label.equals("_sysy_starttime") || ir.label.equals("_sysy_stoptime"))
+                    out.add("   MOV  r0 , #0"+"\n");
+                out.add("   BL " + ir.label+"\n");
                 if (ir.dest.type == OpName.Type.Var) {
                     if (ctx.var_in_reg(ir.dest.name)) {
-                        out.println("    MOV r" + ctx.var_to_reg.get(ir.dest.name) + ", r0");
+                        out.add("    MOV r" + ctx.var_to_reg.get(ir.dest.name) + ", r0"+"\n");
                     } else {
                         ctx.store_to_stack("r0", ir.dest, out, "STR");
                     }
@@ -364,29 +370,29 @@ public class Asm {
                 if (!op2_in_reg) {
                     ctx.load("r" + op2, ir.op2, out);
                 }
-                out.println("    CMP r" + op1 + ", r" + op2);
+                out.add("    CMP r" + op1 + ", r" + op2+"\n");
             } else if (ir.op_code == IR.OpCode.JMP) {
-                out.println("   " + "B " + ir.label);
+                out.add("   " + "B " + ir.label+"\n");
             } else if (ir.op_code == IR.OpCode.JEQ) {
-                out.println("   " + "BEQ " + ir.label);
+                out.add("   " + "BEQ " + ir.label+"\n");
             } else if (ir.op_code == IR.OpCode.JNE) {
-                out.println("   " + "BNE " + ir.label);
+                out.add("   " + "BNE " + ir.label+"\n");
             } else if (ir.op_code == IR.OpCode.JLE) {
-                out.println("   " + "BLE " + ir.label);
+                out.add("   " + "BLE " + ir.label+"\n");
             } else if (ir.op_code == IR.OpCode.JLT) {
-                out.println("   " + "BLT " + ir.label);
+                out.add("   " + "BLT " + ir.label+"\n");
             } else if (ir.op_code == IR.OpCode.JGE) {
-                out.println("   " + "BGE " + ir.label);
+                out.add("   " + "BGE " + ir.label+"\n");
             } else if (ir.op_code == IR.OpCode.JGT) {
-                out.println("   " + "BGT " + ir.label);
+                out.add("   " + "BGT " + ir.label+"\n");
             } else if (ir.op_code == IR.OpCode.MOVEQ) {
                 boolean dest_in_reg = ctx.var_in_reg(ir.dest.name);
                 int dest = dest_in_reg ? ctx.var_to_reg.get(ir.dest.name) : 12;
                 if (ir.op1.type == OpName.Type.Imm && ir.op1.value >= 0 &&
                         ir.op1.value < 256 && ir.op2.type == OpName.Type.Imm &&
                         ir.op2.value >= 0 && ir.op2.value < 256) {
-                    out.println("    " + "MOVEQ" + " r" + dest + ", #" + ir.op1.value);
-                    out.println("    " + "MOVNE" + " r" + dest + ", #" + ir.op2.value);
+                    out.add("    " + "MOVEQ" + " r" + dest + ", #" + ir.op1.value+"\n");
+                    out.add("    " + "MOVNE" + " r" + dest + ", #" + ir.op2.value+"\n");
                     if (!dest_in_reg) {
                         ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
                     }
@@ -397,8 +403,8 @@ public class Asm {
                 if (ir.op1.type == OpName.Type.Imm && ir.op1.value >= 0 &&
                         ir.op1.value < 256 && ir.op2.type == OpName.Type.Imm &&
                         ir.op2.value >= 0 && ir.op2.value < 256) {
-                    out.println("    " + "MOVNE" + " r" + dest + ", #" + ir.op1.value);
-                    out.println("    " + "MOVEQ" + " r" + dest + ", #" + ir.op2.value);
+                    out.add("    " + "MOVNE" + " r" + dest + ", #" + ir.op1.value+"\n");
+                    out.add("    " + "MOVEQ" + " r" + dest + ", #" + ir.op2.value+"\n");
                     if (!dest_in_reg) {
                         ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
                     }
@@ -409,8 +415,8 @@ public class Asm {
                 if (ir.op1.type == OpName.Type.Imm && ir.op1.value >= 0 &&
                         ir.op1.value < 256 && ir.op2.type == OpName.Type.Imm &&
                         ir.op2.value >= 0 && ir.op2.value < 256) {
-                    out.println("    " + "MOVLE" + " r" + dest + ", #" + ir.op1.value);
-                    out.println("    " + "MOVGT" + " r" + dest + ", #" + ir.op2.value);
+                    out.add("    " + "MOVLE" + " r" + dest + ", #" + ir.op1.value+"\n");
+                    out.add("    " + "MOVGT" + " r" + dest + ", #" + ir.op2.value+"\n");
                     if (!dest_in_reg) {
                         ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
                     }
@@ -421,8 +427,8 @@ public class Asm {
                 if (ir.op1.type == OpName.Type.Imm && ir.op1.value >= 0 &&
                         ir.op1.value < 256 && ir.op2.type == OpName.Type.Imm &&
                         ir.op2.value >= 0 && ir.op2.value < 256) {
-                    out.println("    " + "MOVGT" + " r" + dest + ", #" + ir.op1.value);
-                    out.println("    " + "MOVLE" + " r" + dest + ", #" + ir.op2.value);
+                    out.add("    " + "MOVGT" + " r" + dest + ", #" + ir.op1.value+"\n");
+                    out.add("    " + "MOVLE" + " r" + dest + ", #" + ir.op2.value+"\n");
                     if (!dest_in_reg) {
                         ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
                     }
@@ -433,8 +439,8 @@ public class Asm {
                 if (ir.op1.type == OpName.Type.Imm && ir.op1.value >= 0 &&
                         ir.op1.value < 256 && ir.op2.type == OpName.Type.Imm &&
                         ir.op2.value >= 0 && ir.op2.value < 256) {
-                    out.println("    " + "MOVLT" + " r" + dest + ", #" + ir.op1.value);
-                    out.println("    " + "MOVGE" + " r" + dest + ", #" + ir.op2.value);
+                    out.add("    " + "MOVLT" + " r" + dest + ", #" + ir.op1.value+"\n");
+                    out.add("    " + "MOVGE" + " r" + dest + ", #" + ir.op2.value+"\n");
                     if (!dest_in_reg) {
                         ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
                     }
@@ -445,8 +451,8 @@ public class Asm {
                 if (ir.op1.type == OpName.Type.Imm && ir.op1.value >= 0 &&
                         ir.op1.value < 256 && ir.op2.type == OpName.Type.Imm &&
                         ir.op2.value >= 0 && ir.op2.value < 256) {
-                    out.println("    " + "MOVGE" + " r" + dest + ", #" + ir.op1.value);
-                    out.println("    " + "MOVLT" + " r" + dest + ", #" + ir.op2.value);
+                    out.add("    " + "MOVGE" + " r" + dest + ", #" + ir.op1.value+"\n");
+                    out.add("    " + "MOVLT" + " r" + dest + ", #" + ir.op2.value+"\n");
                     if (!dest_in_reg) {
                         ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
                     }
@@ -466,9 +472,9 @@ public class Asm {
                 if (!op2_in_reg) {
                     ctx.load("r" + op2, ir.op2, out);
                 }
-                out.println("    TST r" + op1 + ", r" + op2);
-                out.println("    MOVEQ r" + dest + ", #0");
-                out.println("    MOVNE r" + dest + ", #1");
+                out.add("    TST r" + op1 + ", r" + op2+"\n");
+                out.add("    MOVEQ r" + dest + ", #0"+"\n");
+                out.add("    MOVNE r" + dest + ", #1"+"\n");
                 if (!dest_in_reg) {
                     ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
                 }
@@ -487,9 +493,9 @@ public class Asm {
                 if (!op2_in_reg) {
                     ctx.load("r" + op2, ir.op2, out);
                 }
-                out.println("    ORRS r12, r" + op1 + ", r" + op2);
-                out.println("    MOVEQ r" + dest + ", #0");
-                out.println("    MOVNE r" + dest + ", #1");
+                out.add("    ORRS r12, r" + op1 + ", r" + op2+"\n");
+                out.add("    MOVEQ r" + dest + ", #0"+"\n");
+                out.add("    MOVNE r" + dest + ", #1"+"\n");
                 if (!dest_in_reg) {
                     ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
                 }
@@ -519,14 +525,14 @@ public class Asm {
                     ctx.load("r" + op1, ir.op1, out);
 //                    out.println("    ADD r12, r" + op1 + ", r" + op2);
                     if(!offset_is_small)
-                        out.println("   ADD r12, r"+op1+", r"+op2);
+                        out.add("   ADD r12, r"+op1+", r"+op2+"\n");
                     if (!op3_in_reg) ctx.load("r" + op3, ir.op3, out);
 //                    out.println("    STR r" + op3 + ", [r12]");
-                    out.println("    STR r" + op3 + ", ["
+                    out.add("    STR r" + op3 + ", ["
                             + (offset_is_small
                             ? "r" + op1 + ",#" +ir.op2.value
                             : "r12")
-                            +"]" );
+                            +"]"+"\n" );
                 }
             } else if (ir.op_code == IR.OpCode.LOAD) {
                 boolean dest_in_reg = ctx.var_in_reg(ir.dest.name);
@@ -558,12 +564,12 @@ public class Asm {
 //                    out.println("    ADD r12, r" + op1 + ", r" + op2);
 //                    out.println("    LDR r" + dest + ", [r12]");
                     if(!offset_is_small)
-                        out.println("    ADD r12, r" + op1 + ", r" + op2);
-                    out.println("    LDR r" + dest + ", ["
+                        out.add("    ADD r12, r" + op1 + ", r" + op2+"\n");
+                    out.add("    LDR r" + dest + ", ["
                             + (offset_is_small
                             ? "r" + op1 + ",#" + ir.op2.value
                             : "r12")
-                            + "]");
+                            + "]"+"\n");
                     if (!dest_in_reg) {
                         ctx.store_to_stack("r" + dest, ir.dest, out, "STR");
                     }
@@ -589,15 +595,15 @@ public class Asm {
                     ctx.load("r12",
                             new OpName(stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3]),
                             out);
-                    out.println("    ADD sp, sp, r12");
+                    out.add("    ADD sp, sp, r12"+"\n");
                 } else {
-                    out.println("    ADD sp, sp, #"
-                            + (stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3])
+                    out.add("    ADD sp, sp, #"
+                            + (stack_size[0] + stack_size[1] + stack_size[2] + stack_size[3])+"\n"
                     );
                 }
-                out.println("    MOV PC, LR");
+                out.add("    MOV PC, LR"+"\n");
             } else if (ir.op_code == IR.OpCode.LABEL) {
-                out.println(ir.label + ":");
+                out.add(ir.label + ":"+"\n");
             }
 
 
@@ -607,5 +613,3 @@ public class Asm {
 
 
 }
-
-
